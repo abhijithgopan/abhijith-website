@@ -1,0 +1,118 @@
+---
+import { getCollection } from "astro:content";
+import "../../styles/global.css";
+
+const posts = await getCollection("blog");
+
+posts.sort(
+  (a, b) =>
+    b.data.date.valueOf() - a.data.date.valueOf()
+);
+
+const postsByYear = posts.reduce<Record<string, typeof posts>>(
+  (groups, post) => {
+    const year = post.data.date.getFullYear().toString();
+
+    if (!groups[year]) {
+      groups[year] = [];
+    }
+
+    groups[year].push(post);
+
+    return groups;
+  },
+  {}
+);
+
+const years = Object.keys(postsByYear).sort(
+  (a, b) => Number(b) - Number(a)
+);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+
+    <title>Blog — Abhijith</title>
+
+    <meta
+      name="description"
+      content="Blog posts by Abhijith."
+    />
+  </head>
+
+  <body>
+    <main class="container">
+
+      <header class="site-header">
+        <div class="site-title">Abhijith</div>
+
+        <nav>
+          <a href="/">home</a>
+          <a href="/blog" class="active">blog</a>
+          <a href="/now">now</a>
+        </nav>
+      </header>
+
+
+      <section class="blog-page">
+
+        <h1>Blog</h1>
+
+        <div class="writing-list">
+
+          {
+            years.map((year) => (
+              <section class="year-group">
+
+                <div class="year-label">
+                  {year}
+                </div>
+
+                <div class="year-posts">
+
+                  {
+                    postsByYear[year].map((post) => (
+                      <a
+                        href={`/blog/${post.id}`}
+                        class="writing-post"
+                      >
+
+                        <span class="writing-post-title">
+                          {post.data.title}
+                        </span>
+
+                        <time>
+                          {String(
+                            post.data.date.getDate()
+                          ).padStart(2, "0")}
+                          /
+                          {String(
+                            post.data.date.getMonth() + 1
+                          ).padStart(2, "0")}
+                        </time>
+
+                      </a>
+                    ))
+                  }
+
+                </div>
+
+              </section>
+            ))
+          }
+
+        </div>
+
+      </section>
+
+
+      <footer>
+        <a href="/">← Home</a>
+      </footer>
+
+    </main>
+  </body>
+</html>
