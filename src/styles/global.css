@@ -1,28 +1,49 @@
+@import url("https://rsms.me/inter/inter.css");
+
+
 :root {
   --background: #ffffff;
   --text: #181818;
   --muted: #8a8a8a;
   --border: #ededed;
+  --viewer-background: rgba(0, 0, 0, 0.96);
 }
+
+html[data-theme="dark"] {
+  --background: #111111;
+  --text: #f2f2f2;
+  --muted: #929292;
+  --border: #292929;
+  --viewer-background: rgba(0, 0, 0, 0.97);
+}
+
 
 * {
   box-sizing: border-box;
 }
 
+
 html {
   margin: 0;
   padding: 0;
+
   background: var(--background);
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
+
 
 body {
   margin: 0;
   padding: 0;
+
   background: var(--background);
   color: var(--text);
 
   font-family:
-    Inter,
+    "Inter",
     -apple-system,
     BlinkMacSystemFont,
     "Segoe UI",
@@ -30,18 +51,33 @@ body {
     Arial,
     sans-serif;
 
-  font-size: 18px;
+  font-size: 15px;
   line-height: 1.65;
   font-weight: 400;
 
+  font-optical-sizing: auto;
+
+  font-feature-settings:
+    "kern" 1,
+    "liga" 1,
+    "calt" 1;
+
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
+
 
 .container {
   width: 100%;
   max-width: 710px;
+
   margin: 0 auto;
+
   padding: 62px 40px 70px;
 }
 
@@ -55,8 +91,9 @@ body {
   justify-content: space-between;
   align-items: baseline;
 
-  margin-bottom: 82px;
+  margin-bottom: 68px;
 }
+
 
 .site-title {
   color: var(--text);
@@ -65,29 +102,121 @@ body {
   line-height: 1.3;
   font-weight: 400;
 
-  letter-spacing: -0.015em;
+  letter-spacing: -0.012em;
 }
+
+
+.header-right {
+  display: flex;
+  align-items: center;
+
+  gap: 18px;
+}
+
 
 nav {
   display: flex;
   gap: 18px;
 }
 
+
 nav a {
   color: var(--muted);
 
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.4;
   font-weight: 400;
+
+  letter-spacing: -0.006em;
 
   text-decoration: none;
 
   transition: color 0.15s ease;
 }
 
+
 nav a:hover,
 nav a.active {
   color: var(--text);
+}
+
+
+/* Theme button */
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 22px;
+  height: 22px;
+
+  margin: 0;
+  padding: 0;
+
+  color: var(--muted);
+
+  background: transparent;
+
+  border: 0;
+
+  cursor: pointer;
+
+  transition:
+    color 0.15s ease,
+    transform 0.15s ease;
+}
+
+
+.theme-toggle:hover {
+  color: var(--text);
+}
+
+
+.theme-toggle svg {
+  width: 18px;
+  height: 18px;
+
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+
+.theme-icon-sun {
+  display: none;
+}
+
+
+html[data-theme="dark"] .theme-icon-moon {
+  display: none;
+}
+
+
+html[data-theme="dark"] .theme-icon-sun {
+  display: block;
+}
+
+
+.sr-only {
+  position: absolute;
+
+  width: 1px;
+  height: 1px;
+
+  padding: 0;
+  margin: -1px;
+
+  overflow: hidden;
+
+  clip: rect(0, 0, 0, 0);
+
+  white-space: nowrap;
+
+  border: 0;
 }
 
 
@@ -96,56 +225,68 @@ nav a.active {
 ==================== */
 
 .intro {
-  margin-bottom: 88px;
+  margin-bottom: 68px;
 }
 
+
 .intro h1 {
-  margin: 0 0 30px;
+  margin: 0 0 28px;
 
   color: var(--text);
 
-  font-size: 21px;
+  font-size: 20px;
   line-height: 1.45;
   font-weight: 400;
 
-  letter-spacing: -0.015em;
+  letter-spacing: -0.012em;
 }
 
+
 .intro h1 span {
-  font-size: 19px;
+  font-size: 18px;
+  letter-spacing: -0.008em;
 }
+
 
 .intro p {
   max-width: 680px;
 
-  margin: 0 0 24px;
+  margin: 0 0 22px;
 
   color: var(--text);
 
-  font-size: 18px;
-  line-height: 1.7;
+  font-size: 15px;
+  line-height: 1.75;
   font-weight: 400;
 
-  letter-spacing: -0.005em;
+  letter-spacing: -0.004em;
+}
+
+
+.intro p:last-child {
+  margin-bottom: 0;
 }
 
 
 /* ====================
-   Writing
+   Musings / Writing
 ==================== */
 
 .writing {
   margin: 0;
 }
 
+
 .writing > h2 {
   margin: 0 0 8px;
 
   color: var(--muted);
 
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.5;
   font-weight: 400;
+
+  letter-spacing: -0.006em;
 }
 
 
@@ -153,18 +294,23 @@ nav a.active {
 
 .year-group {
   display: grid;
+
   grid-template-columns: 110px 1fr;
 
   border-top: 1px solid var(--border);
 }
+
 
 .year-label {
   padding: 15px 0;
 
   color: var(--muted);
 
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.5;
+  font-weight: 400;
+
+  letter-spacing: -0.006em;
 }
 
 
@@ -173,6 +319,7 @@ nav a.active {
 .year-posts {
   min-width: 0;
 }
+
 
 .writing-post {
   display: flex;
@@ -185,38 +332,48 @@ nav a.active {
 
   color: var(--text);
 
-  font-size: 17px;
+  font-size: 15px;
   line-height: 1.5;
   font-weight: 400;
+
+  letter-spacing: -0.004em;
 
   text-decoration: none;
 
   border-bottom: 1px solid var(--border);
 }
 
+
 .year-group:last-child
 .writing-post:last-child {
   border-bottom: none;
 }
 
+
 .writing-post-title {
   min-width: 0;
 }
 
+
 .writing-post:hover
 .writing-post-title {
   text-decoration: underline;
+
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
 }
+
 
 .writing-post time {
   flex: 0 0 auto;
 
   color: var(--muted);
 
-  font-size: 15px;
+  font-size: 13px;
   line-height: 1.4;
+  font-weight: 400;
+
+  letter-spacing: -0.004em;
 }
 
 
@@ -229,11 +386,11 @@ nav a.active {
 
   color: var(--text);
 
-  font-size: 21px;
+  font-size: 20px;
   line-height: 1.45;
   font-weight: 400;
 
-  letter-spacing: -0.015em;
+  letter-spacing: -0.012em;
 }
 
 
@@ -245,64 +402,87 @@ nav a.active {
   margin: 0;
 }
 
+
 .post-header {
   margin-bottom: 50px;
 }
+
 
 .post-header h1 {
   margin: 0 0 10px;
 
   color: var(--text);
 
-  font-size: 28px;
+  font-size: 27px;
   line-height: 1.3;
   font-weight: 400;
 
-  letter-spacing: -0.02em;
+  letter-spacing: -0.018em;
 }
+
 
 .post-header time {
   color: var(--muted);
 
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.4;
+  font-weight: 400;
+
+  letter-spacing: -0.004em;
 }
 
+
 .post-content {
-  font-size: 18px;
-  line-height: 1.72;
-  letter-spacing: -0.005em;
+  color: var(--text);
+
+  font-size: 15px;
+  line-height: 1.75;
+  font-weight: 400;
+
+  letter-spacing: -0.004em;
 }
+
 
 .post-content p {
   margin: 0 0 28px;
 }
 
+
 .post-content h2 {
   margin: 52px 0 18px;
 
-  font-size: 22px;
+  color: var(--text);
+
+  font-size: 20px;
   line-height: 1.4;
   font-weight: 400;
 
-  letter-spacing: -0.015em;
+  letter-spacing: -0.012em;
 }
+
 
 .post-content h3 {
   margin: 42px 0 16px;
 
-  font-size: 19px;
+  color: var(--text);
+
+  font-size: 17px;
   line-height: 1.4;
   font-weight: 400;
+
+  letter-spacing: -0.008em;
 }
+
 
 .post-content a {
   color: inherit;
 
   text-decoration: underline;
+
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
 }
+
 
 .post-content img {
   display: block;
@@ -313,20 +493,24 @@ nav a.active {
   margin: 38px 0;
 }
 
+
 .post-content blockquote {
   margin: 32px 0;
   padding-left: 20px;
 
   border-left: 1px solid var(--border);
 
-  color: #666666;
+  color: var(--muted);
 }
+
 
 .post-content ul,
 .post-content ol {
   margin: 0 0 28px;
+
   padding-left: 28px;
 }
+
 
 .post-content li {
   margin-bottom: 8px;
@@ -342,37 +526,50 @@ nav a.active {
 
   color: var(--text);
 
-  font-size: 21px;
+  font-size: 20px;
   line-height: 1.45;
   font-weight: 400;
 
-  letter-spacing: -0.015em;
+  letter-spacing: -0.012em;
 }
+
 
 .now-page p {
   margin: 0 0 30px;
 
-  font-size: 18px;
-  line-height: 1.7;
+  color: var(--text);
+
+  font-size: 15px;
+  line-height: 1.75;
+  font-weight: 400;
+
+  letter-spacing: -0.004em;
 }
+
 
 .now-page h2 {
   margin: 50px 0 15px;
 
   color: var(--text);
 
-  font-size: 18px;
+  font-size: 17px;
   line-height: 1.4;
   font-weight: 400;
+
+  letter-spacing: -0.008em;
 }
+
 
 .now-page .updated {
   margin-top: 60px;
 
   color: var(--muted);
 
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.5;
+  font-weight: 400;
+
+  letter-spacing: -0.003em;
 }
 
 
@@ -385,9 +582,13 @@ footer {
 
   color: var(--muted);
 
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.5;
+  font-weight: 400;
+
+  letter-spacing: -0.003em;
 }
+
 
 footer a {
   color: inherit;
@@ -395,10 +596,12 @@ footer a {
   text-decoration: none;
 }
 
+
 footer a:hover {
   color: var(--text);
 
   text-decoration: underline;
+
   text-underline-offset: 3px;
 }
 
@@ -413,26 +616,48 @@ footer a:hover {
     padding: 42px 32px 54px;
   }
 
+
   .site-header {
-    margin-bottom: 68px;
+    margin-bottom: 60px;
   }
+
 
   .site-title {
     font-size: 20px;
   }
 
+
+  .header-right {
+    gap: 13px;
+  }
+
+
   nav {
     gap: 14px;
   }
+
 
   nav a {
     font-size: 15px;
   }
 
 
-  .intro {
-    margin-bottom: 72px;
+  .theme-toggle {
+    width: 20px;
+    height: 20px;
   }
+
+
+  .theme-toggle svg {
+    width: 17px;
+    height: 17px;
+  }
+
+
+  .intro {
+    margin-bottom: 56px;
+  }
+
 
   .intro h1 {
     margin-bottom: 25px;
@@ -440,13 +665,17 @@ footer a:hover {
     font-size: 20px;
   }
 
+
   .intro h1 span {
     font-size: 18px;
   }
 
+
   .intro p {
-    font-size: 18px;
-    line-height: 1.7;
+    font-size: 15px;
+    line-height: 1.75;
+
+    margin-bottom: 22px;
   }
 
 
@@ -459,29 +688,32 @@ footer a:hover {
     grid-template-columns: 65px 1fr;
   }
 
+
   .year-label {
     padding: 14px 0;
 
-    font-size: 15px;
+    font-size: 14px;
   }
+
 
   .writing-post {
     padding: 14px 0;
 
     gap: 12px;
 
-    font-size: 16px;
+    font-size: 15px;
   }
 
+
   .writing-post time {
-    font-size: 14px;
+    font-size: 13px;
   }
 
 
   .blog-page h1 {
     margin-bottom: 30px;
 
-    font-size: 21px;
+    font-size: 20px;
   }
 
 
@@ -489,23 +721,26 @@ footer a:hover {
     margin-bottom: 40px;
   }
 
+
   .post-header h1 {
-    font-size: 26px;
+    font-size: 25px;
   }
 
+
   .post-content {
-    font-size: 17px;
-    line-height: 1.72;
+    font-size: 15px;
+    line-height: 1.75;
   }
 
 
   .now-page h1 {
-    font-size: 21px;
+    font-size: 20px;
   }
 
+
   .now-page p {
-    font-size: 18px;
-    line-height: 1.7;
+    font-size: 15px;
+    line-height: 1.75;
   }
 
 

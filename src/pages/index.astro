@@ -32,8 +32,27 @@ const years = Object.keys(postsByYear).sort(
 <!doctype html>
 <html lang="en">
   <head>
+
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
+
+    <meta
+      name="viewport"
+      content="width=device-width"
+    />
+
+    <script is:inline>
+      (() => {
+        const savedTheme = localStorage.getItem("theme");
+
+        const theme =
+          savedTheme ||
+          (window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light");
+
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
 
     <title>Abhijith</title>
 
@@ -41,30 +60,305 @@ const years = Object.keys(postsByYear).sort(
       name="description"
       content="The personal website of Abhijith."
     />
+
+    <style>
+      /* ====================
+         Profile / Site Brand
+      ==================== */
+
+      .site-brand {
+        display: flex;
+        align-items: center;
+
+        gap: 10px;
+
+        flex: 0 0 auto;
+
+        color: inherit;
+        text-decoration: none;
+
+        line-height: 1;
+      }
+
+
+      .site-brand:hover {
+        color: inherit;
+        text-decoration: none;
+      }
+
+
+      .site-title {
+        color: inherit;
+        text-decoration: none;
+      }
+
+
+      /* ====================
+         Profile Picture
+      ==================== */
+
+      .profile-pic {
+        width: 36px;
+        height: 36px;
+
+        flex: 0 0 36px;
+
+        padding: 2px;
+
+        display: block;
+
+        background: linear-gradient(
+          135deg,
+          #00e5ff 0%,
+          #009cff 30%,
+          #0066ff 58%,
+          #3155ff 80%,
+          #635bff 100%
+        );
+
+        border-radius: 50%;
+      }
+
+
+      .profile-pic img {
+        display: block;
+
+        width: 32px;
+        height: 32px;
+
+        margin: 0;
+        padding: 0;
+
+        object-fit: cover;
+
+        border: 0;
+
+        border-radius: 50%;
+      }
+
+
+      /* ====================
+         Visitor Information
+      ==================== */
+
+      .visitor-info {
+        display: none;
+
+        margin-top: 12px;
+
+        color: var(--muted);
+
+        font-size: 13px;
+        line-height: 1.5;
+        font-weight: 400;
+
+        letter-spacing: -0.003em;
+      }
+
+
+      .visitor-info.visible {
+        display: block;
+      }
+
+
+      .visitor-info span {
+        white-space: normal;
+      }
+
+
+      /* ====================
+         Mobile Header
+      ==================== */
+
+      @media (max-width: 600px) {
+
+        .site-header {
+          gap: 8px;
+        }
+
+
+        .site-brand {
+          gap: 6px;
+        }
+
+
+        .profile-pic {
+          width: 26px;
+          height: 26px;
+
+          flex: 0 0 26px;
+
+          padding: 2px;
+        }
+
+
+        .profile-pic img {
+          width: 22px;
+          height: 22px;
+        }
+
+
+        .site-title {
+          font-size: 17px;
+        }
+
+
+        .header-right {
+          gap: 6px;
+
+          min-width: 0;
+        }
+
+
+        nav {
+          gap: 8px;
+        }
+
+
+        nav a {
+          font-size: 13px;
+        }
+
+
+        .theme-toggle {
+          width: 18px;
+          height: 18px;
+
+          flex: 0 0 18px;
+        }
+
+
+        .theme-toggle svg {
+          width: 15px;
+          height: 15px;
+        }
+
+      }
+    </style>
+
   </head>
 
+
   <body>
+
     <main class="container">
 
-      <header class="site-header">
-        <div class="site-title">Abhijith</div>
 
-        <nav>
-          <a href="/" class="active">home</a>
-          <a href="/blog">blog</a>
-          <a href="/now">now</a>
-        </nav>
+      <header class="site-header">
+
+
+        <a href="/" class="site-brand">
+
+          <span class="profile-pic">
+
+            <img
+              src="/profile.png"
+              alt="Abhijith"
+            />
+
+          </span>
+
+
+          <span class="site-title">
+            Abhijith
+          </span>
+
+        </a>
+
+
+        <div class="header-right">
+
+
+          <nav>
+
+            <a href="/" class="active">
+              home
+            </a>
+
+            <a href="/blog">
+              blog
+            </a>
+
+            <a href="/photos">
+              photos
+            </a>
+
+            <a href="/now">
+              now
+            </a>
+
+          </nav>
+
+
+          <button
+            class="theme-toggle"
+            type="button"
+            aria-label="Switch to dark mode"
+            title="Switch to dark mode"
+          >
+
+
+            <svg
+              class="theme-icon-moon"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+
+              <path
+                d="M21 12.8A8.5 8.5 0 0 1 11.2 3a8.5 8.5 0 1 0 9.8 9.8Z"
+              />
+
+            </svg>
+
+
+            <svg
+              class="theme-icon-sun"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+
+              <circle
+                cx="12"
+                cy="12"
+                r="4"
+              />
+
+              <path d="M12 2v2" />
+              <path d="M12 20v2" />
+              <path d="m4.93 4.93 1.41 1.41" />
+              <path d="m17.66 17.66 1.41 1.41" />
+              <path d="M2 12h2" />
+              <path d="M20 12h2" />
+              <path d="m6.34 17.66-1.41 1.41" />
+              <path d="m19.07 4.93-1.41 1.41" />
+
+            </svg>
+
+
+            <span class="sr-only">
+              Toggle colour theme
+            </span>
+
+          </button>
+
+        </div>
+
       </header>
 
 
       <article class="intro">
 
-    
+
+        <h1>
+          Hello, I am Abhijith <span>👋</span>
+        </h1>
+
 
         <p>
           In this tiny little space of www, I am posting my random thoughts
           WITHOUT proofreading, so you may find a lot of grammar mistakes.
         </p>
+
 
         <p>
           I have profound interests in tech, gadgets, photography, and
@@ -72,32 +366,44 @@ const years = Object.keys(postsByYear).sort(
           anything, but I can't create any of these).
         </p>
 
+
         <p>
           Another way of wasting time (maybe not) is watching movies and
           logging on Letterboxd.
         </p>
+
 
       </article>
 
 
       <section class="writing">
 
-        <h2>Musings</h2>
+
+        <h2>
+          Musings
+        </h2>
+
 
         <div class="writing-list">
 
+
           {
             years.map((year) => (
+
               <section class="year-group">
+
 
                 <div class="year-label">
                   {year}
                 </div>
 
+
                 <div class="year-posts">
+
 
                   {
                     postsByYear[year].map((post) => (
+
                       <a
                         href={`/blog/${post.id}`}
                         class="writing-post"
@@ -107,35 +413,291 @@ const years = Object.keys(postsByYear).sort(
                           {post.data.title}
                         </span>
 
+
                         <time>
+
                           {String(
                             post.data.date.getDate()
                           ).padStart(2, "0")}
+
                           /
+
                           {String(
                             post.data.date.getMonth() + 1
                           ).padStart(2, "0")}
+
                         </time>
 
                       </a>
+
                     ))
                   }
 
+
                 </div>
 
+
               </section>
+
             ))
           }
 
+
         </div>
+
 
       </section>
 
 
       <footer>
-        <a href="/now">What I'm up to →</a>
+
+        <a href="/now">
+          What I'm up to →
+        </a>
+
+
+        <div
+          class="visitor-info"
+          id="visitor-info"
+          aria-live="polite"
+        >
+          <span id="visitor-location"></span>
+        </div>
+
+
       </footer>
 
+
     </main>
+
+
+    <script is:inline>
+
+      const themeButton =
+        document.querySelector(".theme-toggle");
+
+
+      function updateThemeButton() {
+
+        const isDark =
+          document.documentElement.dataset.theme === "dark";
+
+
+        themeButton.setAttribute(
+          "aria-label",
+          isDark
+            ? "Switch to light mode"
+            : "Switch to dark mode"
+        );
+
+
+        themeButton.setAttribute(
+          "title",
+          isDark
+            ? "Switch to light mode"
+            : "Switch to dark mode"
+        );
+
+      }
+
+
+      themeButton.addEventListener("click", () => {
+
+        const isDark =
+          document.documentElement.dataset.theme === "dark";
+
+
+        const newTheme =
+          isDark
+            ? "light"
+            : "dark";
+
+
+        document.documentElement.dataset.theme =
+          newTheme;
+
+
+        localStorage.setItem(
+          "theme",
+          newTheme
+        );
+
+
+        updateThemeButton();
+
+      });
+
+
+      updateThemeButton();
+
+
+      /* ====================
+         Visitor Information
+      ==================== */
+
+      const visitorInfo =
+        document.querySelector("#visitor-info");
+
+      const visitorLocation =
+        document.querySelector("#visitor-location");
+
+
+      async function loadVisitorInformation() {
+
+        try {
+
+          const response =
+            await fetch("/api/visitor", {
+              cache: "no-store"
+            });
+
+
+          if (!response.ok) {
+            return;
+          }
+
+
+          const data =
+            await response.json();
+
+
+          if (
+            !data.available ||
+            !data.location
+          ) {
+            return;
+          }
+
+
+          const city =
+            data.location.city;
+
+
+          const distance =
+            data.distance?.kilometers;
+
+
+          const temperature =
+            data.weather?.temperature;
+
+
+          const description =
+            data.weather?.description;
+
+
+          const localTime =
+            data.localTime;
+
+
+          if (!city) {
+            return;
+          }
+
+
+          let timeText = "";
+
+
+          if (typeof localTime === "string") {
+
+            const timePart =
+              localTime.split("T")[1];
+
+            if (timePart) {
+
+              const [hour, minute] =
+                timePart.split(":");
+
+              const hourNumber =
+                Number(hour);
+
+              const formattedHour =
+                hourNumber % 12 || 12;
+
+              const period =
+                hourNumber >= 12
+                  ? "PM"
+                  : "AM";
+
+              timeText =
+                `${formattedHour}:${minute} ${period}`;
+
+            }
+
+          }
+
+
+          const parts = [];
+
+
+          parts.push(
+            `~ ${city}`
+          );
+
+
+          if (
+            typeof distance === "number"
+          ) {
+
+            parts.push(
+              `${distance.toLocaleString("en-IN")} km from DEL`
+            );
+
+          }
+
+
+          if (timeText) {
+
+            parts.push(
+              timeText
+            );
+
+          }
+
+
+          if (
+            typeof temperature === "number"
+          ) {
+
+            parts.push(
+              `${Math.round(temperature)}°C`
+            );
+
+          }
+
+
+          if (description) {
+
+            parts.push(
+              description
+            );
+
+          }
+
+
+          visitorLocation.textContent =
+            parts.join(" · ");
+
+
+          visitorInfo.classList.add(
+            "visible"
+          );
+
+        } catch (error) {
+
+          console.error(
+            "Unable to load visitor information:",
+            error
+          );
+
+        }
+
+      }
+
+
+      loadVisitorInformation();
+
+    </script>
+
+
   </body>
 </html>
