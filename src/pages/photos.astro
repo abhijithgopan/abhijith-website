@@ -1,127 +1,61 @@
 ---
 import "../styles/global.css";
 
-const photos = [
+const photoModules = import.meta.glob(
+  "../assets/photos/*.{jpg,jpeg,png,webp,avif}",
   {
-    src: "/photos/01.jpg",
-    alt: "Photography by Abhijith",
-    caption: "",
-    location: "",
-    date: "",
-    camera: "",
-    lens: "",
-  },
+    eager: true,
+    query: "?url",
+    import: "default",
+  }
+);
 
-  {
-    src: "/photos/02.jpg",
+const photos = Object.entries(photoModules)
+  .map(([path, src]) => ({
+    src: src as string,
+    filename: path.split("/").pop() ?? "",
     alt: "Photography by Abhijith",
-    caption: "",
-    location: "",
-    date: "",
-    camera: "",
-    lens: "",
-  },
+  }))
+  .sort((a, b) =>
+    a.filename.localeCompare(
+      b.filename,
+      undefined,
+      { numeric: true }
+    )
+  );
 
+const metadata: Record<
+  string,
   {
-    src: "/photos/03.jpg",
-    alt: "Photography by Abhijith",
+    caption?: string;
+    location?: string;
+    date?: string;
+    camera?: string;
+    lens?: string;
+  }
+> = {
+  /*
+    Add optional metadata here using the exact filename.
+
+    Example:
+
+    "03.jpg": {
+      caption: "Morning mist over the tea plantations",
+      location: "Munnar, Kerala",
+      date: "January 2026",
+      camera: "Sony A7 III",
+      lens: "35mm f/1.8",
+    },
+  */
+
+  "03.jpg": {
     caption: "Morning mist over the tea plantations",
     location: "Munnar, Kerala",
     date: "January 2026",
     camera: "Sony A7 III",
     lens: "35mm f/1.8",
   },
-
-  {
-    src: "/photos/04.jpg",
-    alt: "Photography by Abhijith",
-    caption: "",
-    location: "",
-    date: "",
-    camera: "",
-    lens: "",
-  },
-
-  {
-    src: "/photos/05.jpg",
-    alt: "Photography by Abhijith",
-    caption: "",
-    location: "",
-    date: "",
-    camera: "",
-    lens: "",
-  },
-
-  {
-    src: "/photos/06.jpg",
-    alt: "Photography by Abhijith",
-    caption: "",
-    location: "",
-    date: "",
-    camera: "",
-    lens: "",
-  },
-
-  {
-    src: "/photos/07.jpg",
-    alt: "Photography by Abhijith",
-    caption: "",
-    location: "",
-    date: "",
-    camera: "",
-    lens: "",
-  },
-
-  {
-    src: "/photos/08.jpg",
-    alt: "Photography by Abhijith",
-    caption: "",
-    location: "",
-    date: "",
-    camera: "",
-    lens: "",
-  },
-
-  {
-    src: "/photos/09.jpg",
-    alt: "Photography by Abhijith",
-    caption: "",
-    location: "",
-    date: "",
-    camera: "",
-    lens: "",
-  },
-
-  {
-    src: "/photos/10.jpg",
-    alt: "Photography by Abhijith",
-    caption: "",
-    location: "",
-    date: "",
-    camera: "",
-    lens: "",
-  },
-
-  {
-    src: "/photos/11.jpg",
-    alt: "Photography by Abhijith",
-    caption: "",
-    location: "",
-    date: "",
-    camera: "",
-    lens: "",
-  },
-
-  {
-    src: "/photos/12.jpg",
-    alt: "Photography by Abhijith",
-    caption: "",
-    location: "",
-    date: "",
-    camera: "",
-    lens: "",
-  },
-];
+};
 ---
 
 <!doctype html>
@@ -175,8 +109,8 @@ const photos = [
     content="Photography by Abhijith."
   />
 
-
   <style>
+
     .site-brand {
       display: flex;
       align-items: center;
@@ -206,6 +140,7 @@ const photos = [
       flex: 0 0 36px;
       padding: 2px;
       display: block;
+
       background: linear-gradient(
         135deg,
         #00e5ff 0%,
@@ -214,17 +149,22 @@ const photos = [
         #3155ff 80%,
         #635bff 100%
       );
+
       border-radius: 50%;
     }
 
 
     .profile-pic img {
       display: block;
+
       width: 32px;
       height: 32px;
+
       margin: 0;
       padding: 0;
+
       object-fit: cover;
+
       border: 0;
       border-radius: 50%;
     }
@@ -326,18 +266,6 @@ const photos = [
     /* ==================================================
        Fullscreen photo viewer
     ================================================== */
-
-    /*
-      The viewer is always dark.
-
-      The layout has two separate areas:
-
-      LEFT  = photograph
-      RIGHT = optional metadata
-
-      This means metadata can never overlap
-      the photograph.
-    */
 
     .photo-viewer {
       position: fixed;
@@ -657,11 +585,6 @@ const photos = [
       }
 
 
-      /*
-        On mobile the metadata moves below
-        the photograph.
-      */
-
       .photo-viewer {
         display: flex;
 
@@ -750,12 +673,15 @@ const photos = [
     <header class="site-header">
 
       <a href="/" class="site-brand">
+
         <span class="profile-pic">
           <img src="/profile.png" alt="Abhijith" />
         </span>
+
         <span class="site-title">
           Abhijith
         </span>
+
       </a>
 
 
@@ -869,6 +795,7 @@ const photos = [
               class="photo"
               type="button"
               data-photo-index={index}
+              data-photo-filename={photo.filename}
               aria-label={`Open photo ${index + 1}`}
             >
 
@@ -1145,115 +1072,16 @@ const photos = [
     /* ==================================================
        Optional metadata
 
-       All fields are optional.
+       Metadata is matched using the image filename.
 
-       Leave them as "" if you don't want
-       that information displayed.
+       Adding a new photo does NOT require adding
+       anything here unless you want metadata.
     ================================================== */
 
-    const metadata = [
-      {
-        caption: "",
-        location: "",
-        date: "",
-        camera: "",
-        lens: "",
-      },
-
-      {
-        caption: "",
-        location: "",
-        date: "",
-        camera: "",
-        lens: "",
-      },
-
-      {
-        caption: "Morning mist over the tea plantations",
-        location: "Munnar, Kerala",
-        date: "January 2026",
-        camera: "Sony A7 III",
-        lens: "35mm f/1.8",
-      },
-
-      {
-        caption: "",
-        location: "",
-        date: "",
-        camera: "",
-        lens: "",
-      },
-
-      {
-        caption: "",
-        location: "",
-        date: "",
-        camera: "",
-        lens: "",
-      },
-
-      {
-        caption: "",
-        location: "",
-        date: "",
-        camera: "",
-        lens: "",
-      },
-
-      {
-        caption: "",
-        location: "",
-        date: "",
-        camera: "",
-        lens: "",
-      },
-
-      {
-        caption: "",
-        location: "",
-        date: "",
-        camera: "",
-        lens: "",
-      },
-
-      {
-        caption: "",
-        location: "",
-        date: "",
-        camera: "",
-        lens: "",
-      },
-
-      {
-        caption: "",
-        location: "",
-        date: "",
-        camera: "",
-        lens: "",
-      },
-
-      {
-        caption: "",
-        location: "",
-        date: "",
-        camera: "",
-        lens: "",
-      },
-
-      {
-        caption: "",
-        location: "",
-        date: "",
-        camera: "",
-        lens: "",
-      },
-    ];
-
-
-    function updateMetadata(index) {
+    function updateMetadata(filename) {
 
       const data =
-        metadata[index];
+        metadata[filename];
 
 
       viewerMeta.classList.remove(
@@ -1368,6 +1196,10 @@ const photos = [
         button.querySelector("img");
 
 
+      const filename =
+        button.dataset.photoFilename || "";
+
+
       viewerImage.src =
         image.src;
 
@@ -1381,7 +1213,7 @@ const photos = [
 
 
       updateMetadata(
-        currentIndex
+        filename
       );
 
 
