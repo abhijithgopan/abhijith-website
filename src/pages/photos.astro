@@ -82,7 +82,6 @@ const metadata: Record<
 
   <script is:inline>
     (() => {
-
       const savedTheme =
         localStorage.getItem("theme");
 
@@ -98,7 +97,6 @@ const metadata: Record<
 
       document.documentElement.dataset.theme =
         theme;
-
     })();
   </script>
 
@@ -114,10 +112,15 @@ const metadata: Record<
     .site-brand {
       display: flex;
       align-items: center;
+
       gap: 10px;
+
       flex: 0 0 auto;
+
       color: inherit;
+
       text-decoration: none;
+
       line-height: 1;
     }
 
@@ -137,8 +140,11 @@ const metadata: Record<
     .profile-pic {
       width: 36px;
       height: 36px;
+
       flex: 0 0 36px;
+
       padding: 2px;
+
       display: block;
 
       background: linear-gradient(
@@ -225,6 +231,7 @@ const metadata: Record<
       display: block;
 
       width: 100%;
+
       aspect-ratio: 3 / 4;
 
       margin: 0;
@@ -419,6 +426,7 @@ const metadata: Record<
       position: absolute;
 
       display: flex;
+
       align-items: center;
       justify-content: center;
 
@@ -478,6 +486,7 @@ const metadata: Record<
       height: 20px;
 
       fill: none;
+
       stroke: currentColor;
 
       stroke-width: 1.4;
@@ -527,7 +536,9 @@ const metadata: Record<
       .profile-pic {
         width: 26px;
         height: 26px;
+
         flex: 0 0 26px;
+
         padding: 2px;
       }
 
@@ -562,6 +573,7 @@ const metadata: Record<
       .theme-toggle {
         width: 18px;
         height: 18px;
+
         flex: 0 0 18px;
       }
 
@@ -665,7 +677,6 @@ const metadata: Record<
 
   <main class="container">
 
-
     <!-- ==================================================
          Header
     ================================================== -->
@@ -675,7 +686,10 @@ const metadata: Record<
       <a href="/" class="site-brand">
 
         <span class="profile-pic">
-          <img src="/profile.png" alt="Abhijith" />
+          <img
+            src="/profile.png"
+            alt="Abhijith"
+          />
         </span>
 
         <span class="site-title">
@@ -723,11 +737,9 @@ const metadata: Record<
             viewBox="0 0 24 24"
             aria-hidden="true"
           >
-
             <path
               d="M21 12.8A8.5 8.5 0 0 1 11.2 3a8.5 8.5 0 1 0 9.8 9.8Z"
             />
-
           </svg>
 
 
@@ -772,7 +784,6 @@ const metadata: Record<
 
     <section class="photos-page">
 
-
       <header class="photos-page-header">
 
         <h1>
@@ -812,7 +823,6 @@ const metadata: Record<
 
       </div>
 
-
     </section>
 
 
@@ -838,7 +848,6 @@ const metadata: Record<
     aria-modal="true"
     aria-label="Photo viewer"
   >
-
 
     <button
       class="photo-viewer-close"
@@ -927,8 +936,16 @@ const metadata: Record<
 
     </div>
 
-
   </div>
+
+
+  <!-- Make server-side metadata available to browser JavaScript -->
+
+  <script
+    type="application/json"
+    id="photo-metadata"
+    set:html={JSON.stringify(metadata)}
+  ></script>
 
 
   <script is:inline>
@@ -1066,6 +1083,20 @@ const metadata: Record<
       );
 
 
+    const metadataElement =
+      document.getElementById(
+        "photo-metadata"
+      );
+
+
+    const metadata =
+      metadataElement
+        ? JSON.parse(
+            metadataElement.textContent || "{}"
+          )
+        : {};
+
+
     let currentIndex = 0;
 
 
@@ -1093,7 +1124,9 @@ const metadata: Record<
 
 
       viewerCaption.textContent = "";
+
       viewerLocation.textContent = "";
+
       viewerDetails.textContent = "";
 
 
@@ -1245,6 +1278,7 @@ const metadata: Record<
 
 
       viewerImage.src = "";
+
       viewerImage.alt = "";
 
     }
