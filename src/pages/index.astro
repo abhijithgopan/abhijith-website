@@ -766,6 +766,235 @@ const years = Object.keys(postsByYear).sort(
 
       }
 
+
+
+      /* ====================
+         Musings hand-drawn outline
+      ==================== */
+
+      .writing h2.musings-title {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-start;
+        width: 120px;
+        height: 54px;
+        margin: 0 0 18px;
+        padding: 0;
+        color: var(--muted);
+        font-size: 18px;
+        font-weight: 400;
+        line-height: 1;
+        letter-spacing: -0.004em;
+      }
+
+      .writing h2.musings-title > span {
+        position: relative;
+        z-index: 2;
+      }
+
+      .musings-outline {
+        position: absolute;
+        top: -4px;
+        left: -8px;
+        width: 112px;
+        height: 48px;
+        overflow: visible;
+        pointer-events: none;
+      }
+
+      .musings-outline path {
+        fill: none;
+        stroke: #18bdf2;
+        stroke-width: 2.4;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .musings-outline .outline-ring {
+        stroke-dasharray: 290;
+        stroke-dashoffset: 290;
+        animation: musings-draw 5.8s ease-in-out infinite;
+      }
+
+      .musings-outline .outline-tail {
+        stroke-width: 2.4;
+        stroke-dasharray: 24;
+        stroke-dashoffset: 24;
+        animation: musings-tail-draw 5.8s ease-in-out infinite;
+      }
+
+      @keyframes musings-draw {
+        0% {
+          stroke-dashoffset: 290;
+          opacity: 0.12;
+        }
+        10% {
+          opacity: 0.85;
+        }
+        76% {
+          stroke-dashoffset: 0;
+          opacity: 0.85;
+        }
+        88% {
+          stroke-dashoffset: 0;
+          opacity: 0.72;
+        }
+        100% {
+          stroke-dashoffset: 290;
+          opacity: 0.12;
+        }
+      }
+
+      @keyframes musings-tail-draw {
+        0% {
+          stroke-dashoffset: 24;
+          opacity: 0.12;
+        }
+        10% {
+          opacity: 0.85;
+        }
+        76% {
+          stroke-dashoffset: 0;
+          opacity: 0.85;
+        }
+        88% {
+          stroke-dashoffset: 0;
+          opacity: 0.72;
+        }
+        100% {
+          stroke-dashoffset: 24;
+          opacity: 0.12;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .musings-outline path {
+          animation: none;
+          stroke-dasharray: none;
+          stroke-dashoffset: 0;
+          opacity: 0.7;
+        }
+      }
+
+
+      /* ====================
+         Writing post hover
+      ==================== */
+
+      .writing-post {
+        position: relative;
+      }
+
+      .writing-post-title {
+        position: relative;
+        display: inline-block;
+        text-decoration: none;
+      }
+
+      .writing-post:hover,
+      .writing-post:focus-visible {
+        text-decoration: none;
+      }
+
+      .writing-post:hover .writing-post-title,
+      .writing-post:focus-visible .writing-post-title {
+        text-decoration: none;
+      }
+
+      /* A loose pen stroke rather than a conventional underline. */
+      .writing-post-title::after {
+        content: "";
+        position: absolute;
+        left: -3px;
+        right: -4px;
+        bottom: -6px;
+        height: 7px;
+        pointer-events: none;
+        opacity: 0;
+        transform: rotate(-0.7deg) scaleX(0.02);
+        transform-origin: left center;
+        background: #18bdf2;
+        clip-path: polygon(
+          0 43%,
+          10% 35%,
+          21% 48%,
+          32% 39%,
+          44% 47%,
+          57% 34%,
+          69% 45%,
+          81% 37%,
+          92% 48%,
+          100% 41%,
+          100% 67%,
+          90% 61%,
+          79% 72%,
+          67% 61%,
+          55% 70%,
+          43% 60%,
+          31% 69%,
+          19% 59%,
+          8% 68%,
+          0 60%
+        );
+      }
+
+      .writing-post:hover .writing-post-title::after,
+      .writing-post:focus-visible .writing-post-title::after {
+        animation: ink-spill 520ms cubic-bezier(0.22, 0.8, 0.2, 1) forwards;
+      }
+
+      @keyframes ink-spill {
+        0% {
+          opacity: 0;
+          transform: rotate(-0.7deg) scaleX(0.02);
+        }
+
+        12% {
+          opacity: 0.82;
+        }
+
+        72% {
+          opacity: 0.72;
+          transform: rotate(-0.7deg) scaleX(1.015);
+        }
+
+        100% {
+          opacity: 0.62;
+          transform: rotate(0.15deg) scaleX(1);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .writing-post-title::after {
+          transition: none;
+          animation: none !important;
+        }
+
+        .writing-post:hover .writing-post-title::after,
+        .writing-post:focus-visible .writing-post-title::after {
+          opacity: 0.62;
+          transform: rotate(0.15deg) scaleX(1);
+        }
+      }
+
+
+      @media (max-width: 600px) {
+        .writing h2.musings-title {
+          width: 120px;
+          height: 54px;
+          font-size: 18px;
+          margin-bottom: 18px;
+        }
+
+        .musings-outline {
+          top: -4px;
+          left: -8px;
+          width: 112px;
+          height: 48px;
+        }
+      }
+
     </style>
 
   </head>
@@ -910,8 +1139,22 @@ const years = Object.keys(postsByYear).sort(
       <section class="writing">
 
 
-        <h2>
-          Musings
+        <h2 class="musings-title">
+          <span>Musings</span>
+          <svg
+            class="musings-outline"
+            viewBox="0 0 120 60"
+            aria-hidden="true"
+          >
+            <path
+              class="outline-ring"
+              d="M 8 31 C 6 24, 15 16, 31 12 C 48 7, 72 9, 89 14 C 105 19, 114 26, 113 32 C 112 39, 101 45, 87 48 C 69 52, 47 52, 30 48 C 15 45, 7 39, 8 31 Z"
+            />
+            <path
+              class="outline-tail"
+              d="M 7 29 C 8 22, 13 17, 20 14"
+            />
+          </svg>
         </h2>
 
 
