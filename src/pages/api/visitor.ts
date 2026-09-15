@@ -1,8 +1,9 @@
 import type { APIRoute } from "astro";
 
-const DEL = {
-  latitude: 28.5562,
-  longitude: 77.1000,
+const ABHIJITH = {
+  city: "Delhi",
+  latitude: 28.6139,
+  longitude: 77.2090,
 };
 
 function toRadians(value: number) {
@@ -16,19 +17,22 @@ function calculateDistance(
   const earthRadius = 6371;
 
   const latitudeDifference =
-    toRadians(latitude - DEL.latitude);
+    toRadians(latitude - ABHIJITH.latitude);
 
   const longitudeDifference =
-    toRadians(longitude - DEL.longitude);
+    toRadians(longitude - ABHIJITH.longitude);
 
   const a =
     Math.sin(latitudeDifference / 2) ** 2 +
-    Math.cos(toRadians(DEL.latitude)) *
-      Math.cos(toRadians(latitude)) *
-      Math.sin(longitudeDifference / 2) ** 2;
+      Math.cos(toRadians(ABHIJITH.latitude)) *
+        Math.cos(toRadians(latitude)) *
+        Math.sin(longitudeDifference / 2) ** 2;
 
   const c =
-    2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    2 * Math.atan2(
+      Math.sqrt(a),
+      Math.sqrt(1 - a)
+    );
 
   return earthRadius * c;
 }
@@ -45,7 +49,9 @@ function getWeatherDescription(code: number) {
   if ([80, 81, 82].includes(code)) return "Rain showers";
   if ([85, 86].includes(code)) return "Snow showers";
   if (code === 95) return "Thunderstorm";
-  if ([96, 99].includes(code)) return "Thunderstorm with hail";
+  if ([96, 99].includes(code)) {
+    return "Thunderstorm with hail";
+  }
 
   return "Unknown";
 }
@@ -107,65 +113,115 @@ export const GET: APIRoute = async ({ request }) => {
     longitude
   );
 
-  const weatherUrl =
+  const visitorWeatherUrl =
     "https://api.open-meteo.com/v1/forecast" +
     `?latitude=${latitude}` +
     `&longitude=${longitude}` +
     "&current=temperature_2m,apparent_temperature,weather_code" +
     "&temperature_unit=celsius" +
-    "&wind_speed_unit=kmh" +
     "&timezone=auto";
 
-  try {
-    const weatherResponse = await fetch(weatherUrl);
+  const delhiWeatherUrl =
+    "https://api.open-meteo.com/v1/forecast" +
+    `?latitude=${ABHIJITH.latitude}` +
+    `&longitude=${ABHIJITH.longitude}` +
+    "&current=temperature_2m,apparent_temperature,weather_code" +
+    "&temperature_unit=celsius" +
+    "&timezone=Asia%2FKolkata";
 
-    if (!weatherResponse.ok) {
-      throw new Error(
-        `Weather request failed: ${weatherResponse.status}`
-      );
+  try {
+    const [
+      visitorWeatherResponse,
+      delhiWeatherResponse,
+    ] = await Promise.all([
+      fetch(visitorWeatherUrl),
+      fetch(delhiWeatherUrl),
+    ]);
+
+    if (
+      !visitorWeatherResponse.ok ||
+      !delhiWeatherResponse.ok
+    ) {
+      throw new Error("Weather request failed.");
     }
 
-    const weather = await weatherResponse.json();
+    const visitorWeather =
+      await visitorWeatherResponse.json();
+
+    const delhiWeather =
+      await delhiWeatherResponse.json();
+
+    const visitorWeatherCode =
+      visitorWeather.current?.weather_code;
+
+    const delhiWeatherCode =
+      delhiWeather.current?.weather_code;
 
     return new Response(
       JSON.stringify({
         available: true,
 
-        location: {
+        visitor: {
           city: cf.city ?? null,
           region: cf.region ?? null,
           country: cf.country ?? null,
           latitude,
           longitude,
           timezone: cf.timezone ?? null,
+
+          distance: {
+            kilometers: Math.round(distance),
+          },
+
+          weather: {
+            temperature:
+              visitorWeather.current?.temperature_2m ??
+              null,
+            feelsLike:
+              visitorWeather.current?.apparent_temperature ??
+              null,
+            code:
+              typeof visitorWeatherCode === "number"
+                ? visitorWeatherCode
+                : null,
+            description:
+              typeof visitorWeatherCode === "number"
+                ? getWeatherDescription(
+                    visitorWeatherCode
+                  )
+                : null,
+          },
+
+          localTime:
+            visitorWeather.current?.time ?? null,
         },
 
-        airport: {
-          name: "Indira Gandhi International Airport",
-          code: "DEL",
-        },
+        me: {
+          city: ABHIJITH.city,
+          timezone: "Asia/Kolkata",
 
-        distance: {
-          kilometers: Math.round(distance),
-        },
+          weather: {
+            temperature:
+              delhiWeather.current?.temperature_2m ??
+              null,
+            feelsLike:
+              delhiWeather.current?.apparent_temperature ??
+              null,
+            code:
+              typeof delhiWeatherCode === "number"
+                ? delhiWeatherCode
+                : null,
+            description:
+              typeof delhiWeatherCode === "number"
+                ? getWeatherDescription(
+                    delhiWeatherCode
+                  )
+                : null,
+          },
 
-        weather: {
-          temperature:
-            weather.current?.temperature_2m ?? null,
-          feelsLike:
-            weather.current?.apparent_temperature ?? null,
-          code:
-            weather.current?.weather_code ?? null,
-          description:
-            typeof weather.current?.weather_code === "number"
-              ? getWeatherDescription(
-                  weather.current.weather_code
-                )
-              : null,
+          localTime:
+            delhiWeather.current?.time ?? null,
         },
-
-        localTime:
-          weather.current?.time ?? null,
       }),
       {
         status: 200,
@@ -176,33 +232,37 @@ export const GET: APIRoute = async ({ request }) => {
       }
     );
   } catch (error) {
-    console.error("Weather request failed:", error);
+    console.error(
+      "Weather request failed:",
+      error
+    );
 
     return new Response(
       JSON.stringify({
         available: true,
 
-        location: {
+        visitor: {
           city: cf.city ?? null,
           region: cf.region ?? null,
           country: cf.country ?? null,
           latitude,
           longitude,
           timezone: cf.timezone ?? null,
+
+          distance: {
+            kilometers: Math.round(distance),
+          },
+
+          weather: null,
+          localTime: null,
         },
 
-        airport: {
-          name: "Indira Gandhi International Airport",
-          code: "DEL",
+        me: {
+          city: ABHIJITH.city,
+          timezone: "Asia/Kolkata",
+          weather: null,
+          localTime: null,
         },
-
-        distance: {
-          kilometers: Math.round(distance),
-        },
-
-        weather: null,
-
-        localTime: null,
       }),
       {
         status: 200,
