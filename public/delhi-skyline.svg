@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 260" fill="none">
+  <defs>
+    <linearGradient id="mist" x1="0" y1="175" x2="0" y2="260" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#d8e0e5" stop-opacity=".72"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity=".98"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Delhi skyline: deliberately restrained, but visible on a white page -->
+  <g stroke="#8796a1" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round">
+    <!-- India Gate -->
+    <path fill="#d1dbe1" d="M86 214V112h12l7-10h41l7 10h12v102h-19v-55c0-15-7-24-21-24s-21 9-21 24v55Z"/>
+    <path d="M105 113h41M108 128h35M109 159h33"/>
+
+    <!-- Central Vista / dome -->
+    <path fill="#d6dfe4" d="M382 214v-44l18-13 18 13v44h-36Zm57 0v-57l31-18 31 18v57h-62Zm84 0v-42l18-13 18 13v42Z"/>
+    <path fill="#d3dde2" d="M444 157c0-24 20-43 44-43s44 19 44 43v57h-88Z"/>
+    <path d="M488 114V98M476 102h24M458 166h60M468 150h40"/>
+
+    <!-- Qutub Minar -->
+    <path fill="#d1dbe0" d="M914 214l7-107 8-12 8 12 7 107Z"/>
+    <path d="M924 121h18M922 139h22M920 159h26M918 181h30M916 202h34"/>
+
+    <!-- smaller Delhi domes -->
+    <path fill="#dce3e7" d="M594 214v-38h9v-9h10v9h9v38Zm88 0v-43h10v-10h10v10h10v43Zm86 0v-35h9v-8h10v8h9v35Z"/>
+
+    <!-- heritage arch -->
+    <path d="M835 214v-54h15v-18h25v18h15v54M850 214v-43h25v43"/>
+
+    <!-- lamps -->
+    <g fill="#aab6be">
+      <path d="M42 214v-58h-2l6-9 6 9h-2v58Z"/>
+      <path d="M204 214v-50h-2l5-8 5 8h-2v50Z"/>
+      <path d="M337 214v-44h-2l5-8 5 8h-2v44Z"/>
+      <path d="M569 214v-44h-2l5-8 5 8h-2v44Z"/>
+    </g>
+
+    <!-- metro -->
+    <path d="M750 174h450M790 184h410M810 184v30M1000 184v30M1160 184v30"/>
+    <path fill="#d5dfe4" d="M820 160c0-8 6-13 14-13h226c8 0 14 5 14 13v18H820Z"/>
+    <path d="M838 153h218M850 178v-25M894 178v-25M938 178v-25M982 178v-25M1026 178v-25M1060 178v-25"/>
+  </g>
+
+  <!-- restrained tree layer -->
+  <g fill="#bdcbd3" opacity=".72">
+    <circle cx="10" cy="220" r="28"/><circle cx="43" cy="214" r="24"/>
+    <circle cx="244" cy="222" r="26"/><circle cx="276" cy="216" r="22"/>
+    <circle cx="520" cy="223" r="28"/><circle cx="554" cy="217" r="23"/>
+    <circle cx="704" cy="222" r="25"/><circle cx="735" cy="216" r="21"/>
+    <circle cx="1090" cy="222" r="29"/><circle cx="1124" cy="216" r="23"/>
+  </g>
+
+  <!-- birds -->
+  <g stroke="#8796a1" stroke-width="1.35" stroke-linecap="round" opacity=".65">
+    <path d="M185 76q6-7 12 0q6-7 12 0"/>
+    <path d="M760 82q5-6 10 0q5-6 10 0"/>
+    <path d="M1050 67q5-6 10 0q5-6 10 0"/>
+  </g>
+
+  <!-- small warm sun -->
+  <circle cx="1040" cy="62" r="24" fill="#f0c77d" fill-opacity=".28"/>
+  <circle cx="1040" cy="62" r="34" stroke="#e8c98f" stroke-opacity=".22"/>
+
+  <!-- atmospheric fade -->
+  <path d="M0 186C160 171 280 194 430 182C590 169 730 194 880 181C1010 169 1110 188 1200 178V260H0Z" fill="url(#mist)"/>
+</svg>

@@ -27,6 +27,117 @@ const postsByYear = posts.reduce<Record<string, typeof posts>>(
 const years = Object.keys(postsByYear).sort(
   (a, b) => Number(b) - Number(a)
 );
+
+const letterboxdFallback = [
+  {
+    title: "Vishwanath & Sons",
+    rating: 3,
+    date: "2026-09-11",
+    link: "https://letterboxd.com/abhijithgopan/film/vishwanath-sons/",
+    poster: ""
+  },
+  {
+    title: "DC",
+    rating: 3,
+    date: "2026-09-04",
+    link: "https://letterboxd.com/abhijithgopan/film/dc/",
+    poster: ""
+  },
+  {
+    title: "I, Nobody",
+    rating: 2,
+    date: "2026-08-30",
+    link: "https://letterboxd.com/abhijithgopan/film/i-nobody/",
+    poster: ""
+  },
+  {
+    title: "Con City",
+    rating: 2.5,
+    date: "2026-08-24",
+    link: "https://letterboxd.com/abhijithgopan/film/con-city/",
+    poster: ""
+  }
+];
+
+const decodeHtml = (value: string) =>
+  value
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
+
+const extractTag = (item: string, tag: string) => {
+  const match = item.match(
+    new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`, "i")
+  );
+
+  return match ? decodeHtml(match[1].trim()) : "";
+};
+
+const ratingStars = (rating: number) => {
+  const fullStars = Math.floor(rating);
+  const halfStar = rating % 1 === 0.5 ? "½" : "";
+
+  return "★".repeat(fullStars) + halfStar;
+};
+
+const formatMovieDate = (date: string) => {
+  const [year, month, day] = date.split("-").map(Number);
+  const value = new Date(year, month - 1, day);
+
+  return value.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short"
+  });
+};
+
+let recentMovies = letterboxdFallback;
+
+try {
+  const letterboxdResponse = await fetch(
+    "https://letterboxd.com/abhijithgopan/rss/"
+  );
+
+  if (letterboxdResponse.ok) {
+    const xml = await letterboxdResponse.text();
+    const items = xml.match(/<item>[\s\S]*?<\/item>/gi) ?? [];
+
+    const movies = items
+      .map((item) => {
+        const title = extractTag(item, "letterboxd:filmTitle");
+        const rating = Number(
+          extractTag(item, "letterboxd:memberRating")
+        );
+        const date = extractTag(item, "letterboxd:watchedDate");
+        const link = extractTag(item, "link");
+        const description = extractTag(item, "description");
+        const posterMatch = description.match(
+          /<img[^>]+src=["']([^"']+)["']/i
+        );
+
+        if (!title || !date || !Number.isFinite(rating) || !link) {
+          return null;
+        }
+
+        return {
+          title,
+          rating,
+          date,
+          link,
+          poster: posterMatch?.[1] ?? ""
+        };
+      })
+      .filter((movie): movie is NonNullable<typeof movie> => movie !== null)
+      .slice(0, 4);
+
+    if (movies.length === 4) {
+      recentMovies = movies;
+    }
+  }
+} catch {
+  // Keep the last known four films if Letterboxd is unavailable during a build.
+}
 ---
 
 <!doctype html>
@@ -142,136 +253,142 @@ const years = Object.keys(postsByYear).sort(
       ==================== */
 
       .weather-footer {
+        position: relative;
         margin-top: 34px;
-
         padding-top: 24px;
-
+        min-height: 230px;
+        overflow: hidden;
         border-top: 1px solid var(--border);
+        isolation: isolate;
+      }
+      .delhi-skyline {
+        position: absolute;
+        z-index: 1;
+        left: -8%;
+        bottom: -8px;
+        width: 116%;
+        height: 195px;
+        display: block;
+        opacity: 0.40;
+        pointer-events: none;
       }
 
-
+      [data-theme="dark"] .delhi-skyline {
+        opacity: 0.25;
+      }
       .weather-status {
+        position: relative;
+        z-index: 3;
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         justify-content: space-between;
-
         gap: 24px;
-
         min-height: 76px;
       }
 
 
       .weather-copy {
-        min-width: 0;
-      }
+  position: relative;
+  z-index: 4;
+  min-width: 0;
+  padding-top: 28px;
+}
 
+.weather-location {
+  margin: 0 0 4px;
+  color: var(--text);
+  font-size: 17px;
+  line-height: 1.4;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
 
-      .weather-location {
-        margin: 0 0 3px;
-
-        color: var(--text);
-
-        font-size: 15px;
-        line-height: 1.5;
-        font-weight: 400;
-
-        letter-spacing: -0.004em;
-      }
-
-
-      .weather-details {
-        margin: 0;
-
-        color: var(--muted);
-
-        font-size: 13px;
-        line-height: 1.5;
-        font-weight: 400;
-
-        letter-spacing: -0.003em;
-      }
+.weather-details {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.5;
+  font-weight: 400;
+  letter-spacing: 0;
+}
 
 
       .weather-animation {
-        position: relative;
-
-        width: 112px;
-        height: 64px;
-
-        flex: 0 0 112px;
-
-        overflow: hidden;
+        position: absolute;
+        z-index: 3;
+        top: 0;
+        right: 0;
+        width: 42%;
+        height: 150px;
+        overflow: visible;
+        pointer-events: none;
       }
 
 
-      /* ====================
-         Weather Scene
-      ==================== */
-
       .weather-scene {
         position: absolute;
-
         inset: 0;
       }
 
 
+      /* Prominent but still minimalist weather illustration */
       .weather-sun {
         position: absolute;
-
-        top: 11px;
-        right: 20px;
-
-        width: 28px;
-        height: 28px;
-
-        border: 1px solid var(--muted);
+        top: 25px;
+        right: 12%;
+        width: 52px;
+        height: 52px;
+        z-index: 4;
+        border: 1px solid #d3a34f;
         border-radius: 50%;
-
-        opacity: 0.75;
-
-        animation: weather-sun-pulse 5s ease-in-out infinite;
+        background: #f0c76f;
+        opacity: 0.82;
+        animation: weather-sun-pulse 4s ease-in-out infinite;
       }
 
 
       .weather-sun::before,
       .weather-sun::after {
         content: "";
-
         position: absolute;
-
-        inset: -7px;
-
-        border: 1px solid var(--border);
-
         border-radius: 50%;
+        pointer-events: none;
+      }
+
+
+      .weather-sun::before {
+        inset: -9px;
+        border: 1px solid #d3a34f;
+        opacity: 0.42;
       }
 
 
       .weather-sun::after {
-        inset: -13px;
+        inset: -17px;
+        border: 1px solid transparent;
+        border-top-color: #d3a34f;
+        border-bottom-color: #d3a34f;
+        opacity: 0.34;
+      }
 
-        border-color: transparent;
-        border-top-color: var(--border);
-        border-bottom-color: var(--border);
+
+      [data-theme="dark"] .weather-sun {
+        border-color: #d9ae5b;
+        background: #d9ae5b;
+        opacity: 0.76;
       }
 
 
       .weather-cloud {
         position: absolute;
-
-        left: 10px;
-        bottom: 13px;
-
-        width: 56px;
-        height: 18px;
-
+        left: 24%;
+        top: 58px;
+        width: 78px;
+        height: 20px;
         border: 1px solid var(--muted);
         border-radius: 18px;
-
         background: var(--background);
-
-        opacity: 0.9;
-
+        opacity: 0.92;
         animation: weather-cloud-drift 7s ease-in-out infinite;
       }
 
@@ -279,51 +396,38 @@ const years = Object.keys(postsByYear).sort(
       .weather-cloud::before,
       .weather-cloud::after {
         content: "";
-
         position: absolute;
-
         bottom: 5px;
-
         border: 1px solid var(--muted);
         border-bottom: 0;
-
         border-radius: 50% 50% 0 0;
-
         background: var(--background);
       }
 
 
       .weather-cloud::before {
         left: 10px;
-
-        width: 22px;
-        height: 22px;
+        width: 24px;
+        height: 24px;
       }
 
 
       .weather-cloud::after {
-        left: 27px;
-
-        width: 16px;
-        height: 16px;
+        left: 30px;
+        width: 18px;
+        height: 18px;
       }
 
 
       .weather-rain {
         position: absolute;
-
-        left: 22px;
-        bottom: 2px;
-
-        width: 1px;
-        height: 9px;
-
+        left: 29%;
+        top: 88px;
+        width: 1.5px;
+        height: 11px;
         background: var(--muted);
-
         opacity: 0;
-
         transform: rotate(18deg);
-
         animation: weather-rain-fall 1.1s linear infinite;
       }
 
@@ -331,41 +435,33 @@ const years = Object.keys(postsByYear).sort(
       .weather-rain::before,
       .weather-rain::after {
         content: "";
-
         position: absolute;
-
-        width: 1px;
-        height: 7px;
-
+        width: 1.5px;
+        height: 8px;
         background: var(--muted);
       }
 
 
       .weather-rain::before {
-        left: 13px;
+        left: 14px;
         top: 4px;
       }
 
 
       .weather-rain::after {
-        left: 26px;
+        left: 28px;
         top: -2px;
       }
 
 
       .weather-fog {
         position: absolute;
-
-        left: 8px;
-        bottom: 10px;
-
-        width: 76px;
-        height: 1px;
-
+        left: 12%;
+        top: 92px;
+        width: 125px;
+        height: 2px;
         background: var(--muted);
-
         opacity: 0;
-
         animation: weather-fog-drift 5s ease-in-out infinite;
       }
 
@@ -373,42 +469,33 @@ const years = Object.keys(postsByYear).sort(
       .weather-fog::before,
       .weather-fog::after {
         content: "";
-
         position: absolute;
-
         left: 10px;
-
-        width: 60px;
-        height: 1px;
-
+        width: 100px;
+        height: 2px;
         background: var(--muted);
       }
 
 
       .weather-fog::before {
-        top: -8px;
+        top: -9px;
       }
 
 
       .weather-fog::after {
-        top: 8px;
+        top: 9px;
       }
 
 
       .weather-snow {
         position: absolute;
-
-        left: 25px;
-        bottom: 3px;
-
-        width: 4px;
-        height: 4px;
-
+        left: 29%;
+        top: 84px;
+        width: 5px;
+        height: 5px;
         border: 1px solid var(--muted);
         border-radius: 50%;
-
         opacity: 0;
-
         animation: weather-snow-fall 2.8s linear infinite;
       }
 
@@ -416,12 +503,9 @@ const years = Object.keys(postsByYear).sort(
       .weather-snow::before,
       .weather-snow::after {
         content: "";
-
         position: absolute;
-
-        width: 4px;
-        height: 4px;
-
+        width: 5px;
+        height: 5px;
         border: 1px solid var(--muted);
         border-radius: 50%;
       }
@@ -452,7 +536,7 @@ const years = Object.keys(postsByYear).sort(
 
 
       .weather-scene[data-weather="cloudy"] .weather-sun {
-        opacity: 0.3;
+        opacity: 0.46;
       }
 
 
@@ -464,7 +548,7 @@ const years = Object.keys(postsByYear).sort(
 
 
       .weather-scene[data-weather="rain"] .weather-rain {
-        opacity: 0.65;
+        opacity: 0.82;
       }
 
 
@@ -477,7 +561,7 @@ const years = Object.keys(postsByYear).sort(
 
 
       .weather-scene[data-weather="fog"] .weather-fog {
-        opacity: 0.55;
+        opacity: 0.68;
       }
 
 
@@ -489,7 +573,7 @@ const years = Object.keys(postsByYear).sort(
 
 
       .weather-scene[data-weather="snow"] .weather-snow {
-        opacity: 0.7;
+        opacity: 0.80;
       }
 
 
@@ -501,7 +585,7 @@ const years = Object.keys(postsByYear).sort(
 
 
       .weather-scene[data-weather="storm"] .weather-rain {
-        opacity: 0.8;
+        opacity: 0.92;
         animation-duration: 0.7s;
       }
 
@@ -515,17 +599,16 @@ const years = Object.keys(postsByYear).sort(
          Footer Distance
       ==================== */
 
-      .visitor-distance {
-        margin: 18px 0 0;
-
-        color: var(--muted);
-
-        font-size: 13px;
-        line-height: 1.5;
-        font-weight: 400;
-
-        letter-spacing: -0.003em;
-      }
+     .visitor-distance {
+  position: relative;
+  z-index: 4;
+  margin: 32px 0 0;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.5;
+  font-weight: 400;
+  letter-spacing: 0;
+}
 
 
       .visitor-distance.visible {
@@ -537,10 +620,448 @@ const years = Object.keys(postsByYear).sort(
         display: none;
       }
 
+.weather-footer > a {
+  position: relative;
+  z-index: 4;
+  display: inline-block;
+  margin-top: 3px;
+  font-size: 12.5px;
+  color: var(--muted);
+  text-decoration: none;
+}
 
+.weather-footer > a:hover {
+  color: #00a9c7;
+}
       /* ====================
          Mobile Header
       ==================== */
+
+      /* ====================
+         Musings heading — hand-drawn scribble on hover
+      ==================== */
+
+      .writing-heading {
+        position: relative;
+        display: inline-block;
+        width: fit-content;
+        margin: 0;
+        padding: 0;
+        font-size: 15px;
+        line-height: 1.5;
+        font-weight: 400;
+        color: var(--muted-text, #777);
+      }
+
+      .writing-heading-label {
+        position: relative;
+        z-index: 2;
+        display: inline-block;
+      }
+
+      .writing-heading-scribble {
+        position: absolute;
+        z-index: 1;
+        left: -2px;
+        bottom: -5px;
+        width: 95px;
+        height: 16px;
+        overflow: visible;
+        pointer-events: none;
+      }
+
+      .writing-heading-scribble path {
+        fill: none;
+        stroke: #00a9c7;
+        stroke-width: 1.25;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        vector-effect: non-scaling-stroke;
+        stroke-dasharray: 115;
+        stroke-dashoffset: 115;
+        opacity: 0;
+        transition:
+          stroke-dashoffset 420ms cubic-bezier(.2, .8, .2, 1),
+          opacity 120ms ease;
+      }
+
+      .writing:hover .writing-heading-scribble path,
+      .writing:focus-within .writing-heading-scribble path {
+        stroke-dashoffset: 0;
+        opacity: 0.85;
+      }
+
+      /* ====================
+         Writing post — ink-spill hover
+      ==================== */
+
+      .writing-post {
+        position: relative;
+        transition:
+          transform 180ms ease,
+          background-color 180ms ease;
+      }
+
+      .writing-post-title {
+        position: relative;
+        display: inline-block;
+        color: inherit;
+        text-decoration: none !important;
+      }
+
+      .writing-post-title::after {
+        content: "";
+        position: absolute;
+        left: -2px;
+        right: -3px;
+        bottom: -2px;
+        height: 5px;
+        border-top: 1.5px solid #00a9c7;
+        border-radius: 48% 52% 45% 55%;
+        transform: scaleX(0) rotate(-0.5deg);
+        transform-origin: left center;
+        opacity: 0;
+        transition:
+          transform 300ms cubic-bezier(.2, .8, .2, 1),
+          opacity 120ms ease;
+        pointer-events: none;
+      }
+
+      .writing-post:hover {
+        transform: translateX(2px);
+      }
+
+      .writing-post:hover .writing-post-title {
+        color: inherit;
+      }
+
+      .writing-post:hover .writing-post-title::after {
+        transform: scaleX(1) rotate(-0.5deg);
+        opacity: 0.9;
+      }
+
+      .writing-post:focus-visible {
+        outline: 1px solid #00a9c7;
+        outline-offset: 4px;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .writing-heading-scribble path {
+          transition: none;
+          stroke-dashoffset: 0;
+          opacity: 0;
+        }
+
+        .writing:hover .writing-heading-scribble path,
+        .writing:focus-within .writing-heading-scribble path {
+          opacity: 0.85;
+        }
+
+        .writing-post,
+        .writing-post-title::after {
+          transition: none;
+        }
+      }
+
+      /* ====================
+         Recently Watched
+      ==================== */
+
+      .recent-movies {
+        margin-top: 58px;
+      }
+
+      .recent-movies-heading {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 20px;
+      }
+
+      .recent-movies-heading h2 {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 400;
+        color: var(--muted-text, #777);
+      }
+/* Popcorn reveal: appears when hovering anywhere over the movie section */
+
+.recent-movies-heading h2 {
+  position: relative;
+  padding-left: 0;
+  transition: padding-left 220ms ease;
+}
+
+.movie-popcorn {
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  display: inline-block;
+  width: 24px;
+  height: 25px;
+  opacity: 0;
+  transform: translateX(-5px) scale(0.9);
+  transform-origin: 50% 100%;
+  pointer-events: none;
+  transition:
+    opacity 180ms ease,
+    transform 220ms ease;
+}
+
+.popcorn-bucket {
+  position: absolute;
+  left: 1px;
+  bottom: 0;
+  width: 22px;
+  height: 19px;
+  fill: #fffdf7;
+  stroke: #e53935;
+  stroke-width: 1.15;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transform-origin: 50% 100%;
+}
+
+.popcorn-kernel {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background: #ffd45a;
+  border: 1px solid #e0a900;
+  border-radius: 55% 45% 48% 52%;
+  opacity: 0;
+}
+
+.popcorn-kernel-1 {
+  left: 3px;
+  top: 1px;
+}
+
+.popcorn-kernel-2 {
+  left: 9px;
+  top: -3px;
+}
+
+.popcorn-kernel-3 {
+  left: 15px;
+  top: 1px;
+}
+
+/* The whole movie section controls the effect */
+.recent-movies:hover .recent-movies-heading h2,
+.recent-movies:focus-within .recent-movies-heading h2 {
+  padding-left: 31px;
+}
+
+.recent-movies:hover .movie-popcorn,
+.recent-movies:focus-within .movie-popcorn {
+  opacity: 1;
+  transform: translateX(0) scale(0.9);
+}
+
+.recent-movies:hover .popcorn-bucket,
+.recent-movies:focus-within .popcorn-bucket {
+  animation: popcorn-bucket-wobble 1.15s ease-in-out infinite;
+}
+
+.recent-movies:hover .popcorn-kernel,
+.recent-movies:focus-within .popcorn-kernel {
+  animation: popcorn-pop 1.15s cubic-bezier(.2, .9, .25, 1) infinite;
+}
+
+.recent-movies:hover .popcorn-kernel-2,
+.recent-movies:focus-within .popcorn-kernel-2 {
+  animation-delay: 180ms;
+}
+
+.recent-movies:hover .popcorn-kernel-3,
+.recent-movies:focus-within .popcorn-kernel-3 {
+  animation-delay: 330ms;
+}
+
+@keyframes popcorn-bucket-wobble {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-3deg); }
+  55% { transform: rotate(3deg); }
+  75% { transform: rotate(-1.5deg); }
+}
+
+@keyframes popcorn-pop {
+  0%, 8% {
+    opacity: 0;
+    transform: translateY(4px) scale(0.45) rotate(-10deg);
+  }
+
+  25% {
+    opacity: 1;
+    transform: translateY(-1px) scale(0.9) rotate(7deg);
+  }
+
+  58% {
+    opacity: 0.95;
+    transform: translateY(-9px) scale(1) rotate(-7deg);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.65) rotate(12deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .movie-popcorn {
+    transition: none;
+  }
+
+  .recent-movies:hover .popcorn-bucket,
+  .recent-movies:hover .popcorn-kernel,
+  .recent-movies:focus-within .popcorn-bucket,
+  .recent-movies:focus-within .popcorn-kernel {
+    animation: none;
+  }
+
+  .recent-movies:hover .movie-popcorn,
+  .recent-movies:focus-within .movie-popcorn {
+    opacity: 1;
+    transform: scale(0.9);
+  }
+}
+
+      .recent-movies-heading a {
+        font-size: 12px;
+        color: var(--muted-text, #999);
+        text-decoration: none;
+        white-space: nowrap;
+        transition: color 160ms ease;
+      }
+
+      .recent-movies-heading a:hover {
+        color: #00a9c7;
+      }
+
+      .movie-strip {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 18px;
+      }
+
+      .movie-card {
+        min-width: 0;
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .movie-poster-wrap {
+        position: relative;
+        overflow: hidden;
+        aspect-ratio: 2 / 3;
+        background: #f2f2f2;
+        border-radius: 5px;
+      }
+
+      .movie-poster {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 260ms ease, filter 260ms ease;
+      }
+
+      .movie-poster-placeholder {
+        display: flex;
+        align-items: flex-end;
+        height: 100%;
+        padding: 12px;
+        font-size: 13px;
+        line-height: 1.25;
+        color: #777;
+      }
+
+      .movie-card:hover .movie-poster {
+        transform: scale(1.025);
+        filter: saturate(1.05);
+      }
+
+      .movie-title {
+        position: relative;
+        display: inline-block;
+        margin-top: 9px;
+        font-size: 14px;
+        line-height: 1.35;
+      }
+
+      .movie-title::after {
+        content: "";
+        position: absolute;
+        left: -1px;
+        right: -2px;
+        bottom: -2px;
+        height: 4px;
+        border-top: 1.5px solid #00a9c7;
+        border-radius: 50%;
+        transform: scaleX(0);
+        transform-origin: left center;
+        transition: transform 280ms cubic-bezier(.2,.8,.2,1);
+      }
+
+      .movie-card:hover .movie-title::after {
+        transform: scaleX(1);
+      }
+
+      .movie-meta {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 3px;
+      }
+
+      .movie-rating {
+        font-size: 12px;
+        letter-spacing: 0.02em;
+        color: #00a9c7;
+        white-space: nowrap;
+      }
+
+      .movie-date {
+        font-size: 11px;
+        color: var(--muted-text, #999);
+        white-space: nowrap;
+      }
+
+      @media (max-width: 600px) {
+        .recent-movies {
+          margin-top: 48px;
+        }
+
+        .movie-strip {
+          display: flex;
+          overflow-x: auto;
+          gap: 14px;
+          padding-bottom: 6px;
+          margin-right: -18px;
+          padding-right: 18px;
+          scrollbar-width: none;
+        }
+
+        .movie-strip::-webkit-scrollbar {
+          display: none;
+        }
+
+        .movie-card {
+          flex: 0 0 118px;
+        }
+
+        .movie-meta {
+          display: block;
+        }
+
+        .movie-date {
+          display: block;
+          margin-top: 2px;
+        }
+      }
 
       @media (max-width: 600px) {
 
@@ -630,28 +1151,37 @@ const years = Object.keys(postsByYear).sort(
         }
 
 
-        .weather-animation {
-          width: 86px;
-          height: 56px;
-
-          flex: 0 0 86px;
+        .weather-footer {
+          min-height: 205px;
         }
 
+        .delhi-skyline {
+          left: -28%;
+          width: 156%;
+          height: 205px;
+          opacity: 0.23;
+        }
+
+        .weather-copy {
+          padding-top: 8px;
+        }
 
         .weather-sun {
-          top: 7px;
-          right: 10px;
-
-          width: 24px;
-          height: 24px;
+          top: 23px;
+          right: 10%;
+          width: 42px;
+          height: 42px;
         }
 
+        .weather-animation {
+          width: 48%;
+          height: 125px;
+        }
 
         .weather-cloud {
-          left: 3px;
-          bottom: 10px;
-
-          width: 48px;
+          left: 18%;
+          top: 52px;
+          width: 64px;
         }
 
 
@@ -764,235 +1294,6 @@ const years = Object.keys(postsByYear).sort(
           animation: none;
         }
 
-      }
-
-
-
-      /* ====================
-         Musings hand-drawn outline
-      ==================== */
-
-      .writing h2.musings-title {
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        justify-content: flex-start;
-        width: 120px;
-        height: 54px;
-        margin: 0 0 18px;
-        padding: 0;
-        color: var(--muted);
-        font-size: 16px;
-        font-weight: 400;
-        line-height: 1;
-        letter-spacing: -0.004em;
-      }
-
-      .writing h2.musings-title > span {
-        position: relative;
-        z-index: 2;
-      }
-
-      .musings-outline {
-        position: absolute;
-        top: -4px;
-        left: -8px;
-        width: 112px;
-        height: 48px;
-        overflow: visible;
-        pointer-events: none;
-      }
-
-      .musings-outline path {
-        fill: none;
-        stroke: #18bdf2;
-        stroke-width: 2.4;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-      }
-
-      .musings-outline .outline-ring {
-        stroke-dasharray: 290;
-        stroke-dashoffset: 290;
-        animation: musings-draw 5.8s ease-in-out infinite;
-      }
-
-      .musings-outline .outline-tail {
-        stroke-width: 2.4;
-        stroke-dasharray: 24;
-        stroke-dashoffset: 24;
-        animation: musings-tail-draw 5.8s ease-in-out infinite;
-      }
-
-      @keyframes musings-draw {
-        0% {
-          stroke-dashoffset: 290;
-          opacity: 0.12;
-        }
-        10% {
-          opacity: 0.85;
-        }
-        76% {
-          stroke-dashoffset: 0;
-          opacity: 0.85;
-        }
-        88% {
-          stroke-dashoffset: 0;
-          opacity: 0.72;
-        }
-        100% {
-          stroke-dashoffset: 290;
-          opacity: 0.12;
-        }
-      }
-
-      @keyframes musings-tail-draw {
-        0% {
-          stroke-dashoffset: 24;
-          opacity: 0.12;
-        }
-        10% {
-          opacity: 0.85;
-        }
-        76% {
-          stroke-dashoffset: 0;
-          opacity: 0.85;
-        }
-        88% {
-          stroke-dashoffset: 0;
-          opacity: 0.72;
-        }
-        100% {
-          stroke-dashoffset: 24;
-          opacity: 0.12;
-        }
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        .musings-outline path {
-          animation: none;
-          stroke-dasharray: none;
-          stroke-dashoffset: 0;
-          opacity: 0.7;
-        }
-      }
-
-
-      /* ====================
-         Writing post hover
-      ==================== */
-
-      .writing-post {
-        position: relative;
-      }
-
-      .writing-post-title {
-        position: relative;
-        display: inline-block;
-        text-decoration: none;
-      }
-
-      .writing-post:hover,
-      .writing-post:focus-visible {
-        text-decoration: none;
-      }
-
-      .writing-post:hover .writing-post-title,
-      .writing-post:focus-visible .writing-post-title {
-        text-decoration: none;
-      }
-
-      /* A loose pen stroke rather than a conventional underline. */
-      .writing-post-title::after {
-        content: "";
-        position: absolute;
-        left: -3px;
-        right: -4px;
-        bottom: -6px;
-        height: 7px;
-        pointer-events: none;
-        opacity: 0;
-        transform: rotate(-0.7deg) scaleX(0.02);
-        transform-origin: left center;
-        background: #18bdf2;
-        clip-path: polygon(
-          0 43%,
-          10% 35%,
-          21% 48%,
-          32% 39%,
-          44% 47%,
-          57% 34%,
-          69% 45%,
-          81% 37%,
-          92% 48%,
-          100% 41%,
-          100% 67%,
-          90% 61%,
-          79% 72%,
-          67% 61%,
-          55% 70%,
-          43% 60%,
-          31% 69%,
-          19% 59%,
-          8% 68%,
-          0 60%
-        );
-      }
-
-      .writing-post:hover .writing-post-title::after,
-      .writing-post:focus-visible .writing-post-title::after {
-        animation: ink-spill 520ms cubic-bezier(0.22, 0.8, 0.2, 1) forwards;
-      }
-
-      @keyframes ink-spill {
-        0% {
-          opacity: 0;
-          transform: rotate(-0.7deg) scaleX(0.02);
-        }
-
-        12% {
-          opacity: 0.82;
-        }
-
-        72% {
-          opacity: 0.72;
-          transform: rotate(-0.7deg) scaleX(1.015);
-        }
-
-        100% {
-          opacity: 0.62;
-          transform: rotate(0.15deg) scaleX(1);
-        }
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        .writing-post-title::after {
-          transition: none;
-          animation: none !important;
-        }
-
-        .writing-post:hover .writing-post-title::after,
-        .writing-post:focus-visible .writing-post-title::after {
-          opacity: 0.62;
-          transform: rotate(0.15deg) scaleX(1);
-        }
-      }
-
-
-      @media (max-width: 600px) {
-        .writing h2.musings-title {
-          width: 120px;
-          height: 54px;
-          font-size: 16px;
-          margin-bottom: 16px;
-        }
-
-        .musings-outline {
-          top: -4px;
-          left: -8px;
-          width: 112px;
-          height: 48px;
-        }
       }
 
     </style>
@@ -1109,15 +1410,16 @@ const years = Object.keys(postsByYear).sort(
       <article class="intro">
 
 
+      
+
 
         <p>
-        Living in the most chaotic city in India and growing this tiny space in the world wide web.
-      
-        You won't see nothing interesting here just some random thoughts and random clicks :/
+          Living in the most chaotic city in India and growing this tiny space in the world wide web. 
+          You won't see nothing interesting here just some random thoughts and random clicks :/
         </p>
 
 
-    
+        
 
 
       </article>
@@ -1126,20 +1428,20 @@ const years = Object.keys(postsByYear).sort(
       <section class="writing">
 
 
-        <h2 class="musings-title">
-          <span>Musings</span>
+        <h2 class="writing-heading">
+          <span class="writing-heading-label">Musings</span>
           <svg
-            class="musings-outline"
-            viewBox="0 0 120 60"
+            class="writing-heading-scribble"
+            viewBox="0 0 95 16"
             aria-hidden="true"
+            focusable="false"
           >
             <path
-              class="outline-ring"
-              d="M 8 31 C 6 24, 15 16, 31 12 C 48 7, 72 9, 89 14 C 105 19, 114 26, 113 32 C 112 39, 101 45, 87 48 C 69 52, 47 52, 30 48 C 15 45, 7 39, 8 31 Z"
-            />
-            <path
-              class="outline-tail"
-              d="M 7 29 C 8 22, 13 17, 20 14"
+              d="M2 10
+                 C12 6, 18 13, 27 9
+                 C36 5, 42 12, 51 8
+                 C60 4, 67 12, 75 8
+                 C82 5, 88 9, 93 6"
             />
           </svg>
         </h2>
@@ -1209,7 +1511,83 @@ const years = Object.keys(postsByYear).sort(
       </section>
 
 
+      <section class="recent-movies">
+        <div class="recent-movies-heading">
+          <h2 class="recently-watched-title">
+  <span class="movie-popcorn" aria-hidden="true">
+    <span class="popcorn-kernel popcorn-kernel-1"></span>
+    <span class="popcorn-kernel popcorn-kernel-2"></span>
+    <span class="popcorn-kernel popcorn-kernel-3"></span>
+
+    <svg
+      class="popcorn-bucket"
+      viewBox="0 0 28 24"
+      focusable="false"
+    >
+      <path d="M4 6h20l-2 16H6L4 6Z" fill="#fffdf7" />
+      <path d="M3.5 6h21" />
+      <path d="M8 7l2 14" />
+      <path d="M13.5 7v14" />
+      <path d="M19 7l-2 14" />
+      <path d="M6.5 7l2 14" stroke="#e53935" />
+      <path d="M16.5 7l-2 14" stroke="#e53935" />
+    </svg>
+  </span>
+
+  <span>Recently watched</span>
+</h2>
+          <a
+            href="https://letterboxd.com/abhijithgopan/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Letterboxd →
+          </a>
+        </div>
+
+        <div class="movie-strip">
+          {recentMovies.map((movie) => (
+            <a
+              class="movie-card"
+              href={movie.link}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <div class="movie-poster-wrap">
+                {movie.poster ? (
+                  <img
+                    src={movie.poster}
+                    alt={`${movie.title} poster`}
+                    class="movie-poster"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div class="movie-poster-placeholder" aria-hidden="true">
+                    {movie.title}
+                  </div>
+                )}
+              </div>
+
+              <div class="movie-title">{movie.title}</div>
+              <div class="movie-meta">
+                <span class="movie-rating" aria-label={`${movie.rating} out of 5 stars`}>
+                  {ratingStars(movie.rating)}
+                </span>
+                <span class="movie-date">{formatMovieDate(movie.date)}</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+
       <footer class="weather-footer">
+
+        <img
+          class="delhi-skyline"
+          src="/delhi-skyline.svg"
+          alt=""
+          aria-hidden="true"
+        />
 
         <div class="weather-status">
 
