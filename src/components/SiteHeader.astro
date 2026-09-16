@@ -1,0 +1,68 @@
+---
+interface Props {
+  active?: "home" | "blog" | "photos" | "now";
+}
+
+const { active } = Astro.props;
+---
+
+<header class="site-header">
+  <a href="/" class="site-brand">
+    <span class="profile-pic">
+      <img src="/profile.png" alt="Abhijith" />
+    </span>
+    <span class="site-title">Abhijith</span>
+  </a>
+
+  <div class="header-right">
+    <nav>
+      <a href="/" class:list={{ active: active === "home" }} aria-current={active === "home" ? "page" : undefined}>home</a>
+      <a href="/blog" class:list={{ active: active === "blog" }} aria-current={active === "blog" ? "page" : undefined}>blog</a>
+      <a href="/photos" class:list={{ active: active === "photos" }} aria-current={active === "photos" ? "page" : undefined}>photos</a>
+      <a href="/now" class:list={{ active: active === "now" }} aria-current={active === "now" ? "page" : undefined}>now</a>
+    </nav>
+
+    <button
+      class="theme-toggle"
+      type="button"
+      aria-label="Switch to dark mode"
+      title="Switch to dark mode"
+    >
+      <svg class="theme-icon-moon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M21 12.8A8.5 8.5 0 0 1 11.2 3a8.5 8.5 0 1 0 9.8 9.8Z" />
+      </svg>
+      <svg class="theme-icon-sun" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="4" />
+        <path d="M12 2v2" />
+        <path d="M12 20v2" />
+        <path d="m4.93 4.93 1.41 1.41" />
+        <path d="m17.66 17.66 1.41 1.41" />
+        <path d="M2 12h2" />
+        <path d="M20 12h2" />
+        <path d="m6.34 17.66-1.41 1.41" />
+        <path d="m19.07 4.93-1.41 1.41" />
+      </svg>
+      <span class="sr-only">Toggle colour theme</span>
+    </button>
+  </div>
+</header>
+
+<script is:inline>
+  const themeButton = document.querySelector(".theme-toggle");
+
+  function updateThemeButton() {
+    const isDark = document.documentElement.dataset.theme === "dark";
+    themeButton?.setAttribute("aria-label", isDark ? "Switch to light mode" : "Switch to dark mode");
+    themeButton?.setAttribute("title", isDark ? "Switch to light mode" : "Switch to dark mode");
+  }
+
+  themeButton?.addEventListener("click", () => {
+    const isDark = document.documentElement.dataset.theme === "dark";
+    const newTheme = isDark ? "light" : "dark";
+    document.documentElement.dataset.theme = newTheme;
+    localStorage.setItem("theme", newTheme);
+    updateThemeButton();
+  });
+
+  updateThemeButton();
+</script>

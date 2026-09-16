@@ -1,0 +1,111 @@
+---
+interface LineDatum {
+  label: string;
+  value: number;
+}
+
+interface Props {
+  data: LineDatum[];
+  max?: number;
+  title?: string;
+  subtitle?: string;
+  tag?: string;
+  suffix?: string;
+  ariaLabel?: string;
+}
+
+const {
+  data,
+  max = Math.max(...data.map((item) => item.value), 1),
+  title,
+  subtitle,
+  tag,
+  suffix = "",
+  ariaLabel = "Line chart",
+} = Astro.props;
+
+const left = 52;
+const top = 25;
+const width = 628;
+const height = 300;
+const safeMax = max > 0 ? max : 1;
+const pointX = (index: number) => data.length === 1 ? left + width / 2 : left + (index / (data.length - 1)) * width;
+const pointY = (value: number) => top + height - (value / safeMax) * height;
+const points = data.map((item, index) => `${pointX(index)},${pointY(item.value)}`).join(" ");
+---
+
+<div class="chart-surface chart-line">
+  {(title || subtitle || tag) && (
+    <div class="chart-heading">
+      <div>
+        {title && <div class="chart-title">{title}</div>}
+        {subtitle && <div class="chart-subtitle">{subtitle}</div>}
+      </div>
+      {tag && <span class="chart-tag">{tag}</span>}
+    </div>
+  )}
+
+  <div class="line-container">
+    <svg viewBox="0 0 720 380" role="img" aria-label={ariaLabel}>
+      <g class="grid">
+        {Array.from({ length: 6 }, (_, i) => {
+          const yy = top + (i / 5) * height;
+          return <line x1={left} y1={yy} x2={left + width} y2={yy} />;
+        })}
+      </g>
+
+      <polyline points={points} class="line" />
+
+      {data.map((item, index) => (
+        <circle
+          cx={pointX(index)}
+          cy={pointY(item.value)}
+          r="5"
+          data-label={item.label}
+          data-value={item.value}
+          tabindex="0"
+          role="img"
+          aria-label={`${item.label}: ${item.value}${suffix}`}
+        />
+      ))}
+
+      {data.map((item, index) => (
+        <text x={pointX(index)} y="350">{item.label}</text>
+      ))}
+    </svg>
+    <div class="line-tip" hidden></div>
+  </div>
+</div>
+
+<style>
+  .line-container { position: relative; overflow-x: auto; }
+  svg { display: block; width: 100%; min-width: 600px; height: auto; }
+  .grid line { stroke: var(--border); stroke-width: 1; }
+  .line { fill: none; stroke: var(--chart-neutral); stroke-width: 2; vector-effect: non-scaling-stroke; }
+  circle { fill: var(--chart-neutral); stroke: var(--background); stroke-width: 2; cursor: pointer; transition: fill 140ms ease, r 140ms ease; }
+  circle:hover, circle:focus { fill: var(--chart-accent); r: 6; outline: none; }
+  text { fill: var(--muted); font-size: 10px; text-anchor: middle; }
+  .line-tip { position: fixed; z-index: 50; padding: 8px 10px; border-radius: 5px; background: rgba(24,24,24,.94); color: #fff; font-size: 11px; pointer-events: none; }
+  @media (prefers-reduced-motion: reduce) { circle { transition: none; } }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>(".chart-line").forEach((chart) => {
+    const tip = chart.querySelector<HTMLElement>(".line-tip");
+    if (!tip) return;
+    chart.querySelectorAll<SVGCircleElement>("circle").forEach((point) => {
+      const show = () => {
+        tip.hidden = false;
+        tip.textContent = `${point.dataset.label}: ${point.dataset.value}`;
+        const rect = point.getBoundingClientRect();
+        tip.style.left = `${Math.min(window.innerWidth - 180, Math.max(10, rect.left + rect.width / 2 - 50))}px`;
+        tip.style.top = `${Math.max(10, rect.top - 42)}px`;
+      };
+      const hide = () => { tip.hidden = true; };
+      point.addEventListener("mouseenter", show);
+      point.addEventListener("mouseleave", hide);
+      point.addEventListener("focus", show);
+      point.addEventListener("blur", hide);
+    });
+  });
+</script>

@@ -1,0 +1,214 @@
+---
+interface ScatterDatum {
+  label: string;
+  x: number;
+  y: number;
+}
+
+interface Props {
+  data: ScatterDatum[];
+  xMax: number;
+  yMax: number;
+  xLabel: string;
+  yLabel: string;
+  title?: string;
+  subtitle?: string;
+  tag?: string;
+  ariaLabel?: string;
+}
+
+const {
+  data,
+  xMax,
+  yMax,
+  xLabel,
+  yLabel,
+  title,
+  subtitle,
+  tag,
+  ariaLabel = "Scatter plot",
+} = Astro.props;
+
+const plot = { left: 70, top: 30, width: 610, height: 320 };
+const x = (value: number) => plot.left + (value / xMax) * plot.width;
+const y = (value: number) => plot.top + plot.height - (value / yMax) * plot.height;
+const xTicks = 5;
+const yTicks = 5;
+---
+
+<div class="chart-surface chart-scatter">
+  {(title || subtitle || tag) && (
+    <div class="chart-heading">
+      <div>
+        {title && <div class="chart-title">{title}</div>}
+        {subtitle && <div class="chart-subtitle">{subtitle}</div>}
+      </div>
+      {tag && <span class="chart-tag">{tag}</span>}
+    </div>
+  )}
+
+  <div class="scatter-container">
+    <svg viewBox="0 0 720 430" role="img" aria-label={ariaLabel}>
+      <rect x={plot.left} y={plot.top} width={plot.width} height={plot.height} class="scatter-bg" />
+
+      <g class="grid">
+        {Array.from({ length: yTicks + 1 }, (_, i) => {
+          const yy = plot.top + (i / yTicks) * plot.height;
+          return <line x1={plot.left} y1={yy} x2={plot.left + plot.width} y2={yy} />;
+        })}
+        {Array.from({ length: xTicks + 1 }, (_, i) => {
+          const xx = plot.left + (i / xTicks) * plot.width;
+          return <line x1={xx} y1={plot.top} x2={xx} y2={plot.top + plot.height} />;
+        })}
+      </g>
+
+      <g class="axis-labels">
+        {Array.from({ length: xTicks + 1 }, (_, i) => {
+          const value = (xMax / xTicks) * i;
+          return <text x={plot.left + (i / xTicks) * plot.width} y="372">{value % 1 === 0 ? value : value.toFixed(1)}{i === xTicks ? "%" : ""}</text>;
+        })}
+        {Array.from({ length: yTicks + 1 }, (_, i) => {
+          const value = (yMax / yTicks) * (yTicks - i);
+          return <text x="45" y={plot.top + (i / yTicks) * plot.height + 4}>{value % 1 === 0 ? value : value.toFixed(1)}{i === 0 ? "%" : ""}</text>;
+        })}
+      </g>
+
+      <text class="axis-title" x="375" y="408">{xLabel}</text>
+      <text class="axis-title" transform="translate(15 240) rotate(-90)">{yLabel}</text>
+
+      <g class="points">
+        {data.map((point) => (
+          <circle
+            cx={x(point.x)}
+            cy={y(point.y)}
+            r="7"
+            data-name={point.label}
+            data-x={point.x}
+            data-y={point.y}
+            tabindex="0"
+            role="img"
+            aria-label={`${point.label}: ${xLabel} ${point.x}%, ${yLabel} ${point.y}%`}
+          />
+        ))}
+      </g>
+    </svg>
+
+    <div class="scatter-tip" hidden></div>
+  </div>
+
+  <div class="scatter-note">
+    <span class="note-dot"></span>
+    <span>Hover or focus a point to see its values.</span>
+  </div>
+</div>
+
+<style>
+  .scatter-container {
+    position: relative;
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  svg {
+    display: block;
+    width: 100%;
+    min-width: 600px;
+    height: auto;
+  }
+
+  .scatter-bg { fill: transparent; }
+
+  .grid line {
+    stroke: var(--border);
+    stroke-width: 1;
+    opacity: .8;
+  }
+
+  .axis-labels text,
+  .axis-title {
+    fill: var(--muted);
+    font-size: 10px;
+  }
+
+  .axis-title { text-anchor: middle; }
+
+  .points circle {
+    fill: var(--chart-neutral);
+    stroke: var(--background);
+    stroke-width: 2.5;
+    cursor: pointer;
+    transition: fill 140ms ease, r 140ms ease;
+  }
+
+  .points circle:hover,
+  .points circle:focus {
+    fill: var(--chart-accent);
+    r: 8;
+    outline: none;
+  }
+
+  .points circle:focus-visible {
+    stroke: var(--chart-accent);
+  }
+
+  .scatter-tip {
+    position: fixed;
+    z-index: 50;
+    max-width: 210px;
+    padding: 8px 10px;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 5px;
+    background: rgba(24,24,24,.94);
+    color: #fff;
+    font-size: 11px;
+    line-height: 1.5;
+    pointer-events: none;
+  }
+
+  .scatter-note {
+    margin-top: 11px;
+    color: var(--muted);
+    font-size: 10px;
+  }
+
+  .note-dot {
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    margin-right: 7px;
+    border-radius: 50%;
+    background: var(--chart-accent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .points circle { transition: none; }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>(".chart-scatter").forEach((chart) => {
+    const tip = chart.querySelector<HTMLElement>(".scatter-tip");
+    const points = chart.querySelectorAll<SVGCircleElement>(".points circle");
+    if (!tip) return;
+
+    const showTip = (point: SVGCircleElement) => {
+      tip.hidden = false;
+      tip.innerHTML = `<strong>${point.dataset.name}</strong><br>${point.closest(".chart-scatter")?.querySelector(".axis-title")?.textContent ?? "X"}: ${point.dataset.x}%<br>${Array.from(chart.querySelectorAll(".axis-title"))[1]?.textContent ?? "Y"}: ${point.dataset.y}%`;
+
+      const rect = point.getBoundingClientRect();
+      const left = Math.min(window.innerWidth - 230, Math.max(10, rect.left + rect.width / 2 - 80));
+      const top = Math.max(10, rect.top - 76);
+      tip.style.left = `${left}px`;
+      tip.style.top = `${top}px`;
+    };
+
+    const hideTip = () => { tip.hidden = true; };
+
+    points.forEach((point) => {
+      point.addEventListener("mouseenter", () => showTip(point));
+      point.addEventListener("mouseleave", hideTip);
+      point.addEventListener("focus", () => showTip(point));
+      point.addEventListener("blur", hideTip);
+    });
+  });
+</script>

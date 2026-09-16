@@ -1,0 +1,389 @@
+---
+import "../styles/charts.css";
+import BarChart from "./charts/BarChart.astro";
+import DataTable from "./charts/DataTable.astro";
+import ScatterPlot from "./charts/ScatterPlot.astro";
+
+const districtData = [
+  { district: "Idukki", coverage: 9.1, compliance: 12.33 },
+  { district: "Kottayam", coverage: 10.7, compliance: 46.15 },
+  { district: "Thiruvananthapuram", coverage: 29.7, compliance: 31.86 },
+  { district: "Ernakulam", coverage: 50.5, compliance: 14.56 },
+  { district: "Wayanad", coverage: 5.9, compliance: 13.25 },
+  { district: "Thrissur", coverage: 4.8, compliance: 11.92 },
+  { district: "Palakkad", coverage: 9.0, compliance: 37.16 },
+  { district: "Kasaragod", coverage: 10.5, compliance: 37.94 },
+];
+
+const stateCoverage = [
+  { label: "Urban wards", value: 29.1 },
+  { label: "Urban population", value: 17.9 },
+];
+
+const districtCoverage = districtData
+  .slice()
+  .sort((a, b) => b.coverage - a.coverage)
+  .map((row) => ({ label: row.district, value: row.coverage }));
+
+const tableRows = districtData.map((row) => ({
+  district: row.district,
+  coverage: `${row.coverage}%`,
+  compliance: `${row.compliance}%`,
+}));
+
+const scatterData = districtData.map((row) => ({
+  label: row.district,
+  x: row.coverage,
+  y: row.compliance,
+}));
+---
+
+<div class="kerala-data-post">
+  <p class="lead">
+    Kerala is often used as an example of strong public health performance.
+    Its urban health system, however, looks more mixed when two different
+    indicators are placed side by side: <strong>NUHM population coverage</strong>
+    and <strong>IPHS compliance</strong>.
+  </p>
+
+  <p>
+    The August 2025 NUHM fact sheet reports <strong>1,027 of Kerala's 3,525
+    urban wards as covered</strong>, or 29.1%. By population,
+    <strong>3.26 million of 18.14 million urban residents were covered</strong>,
+    or 17.9%.
+  </p>
+
+  <p>
+    The December 2024 NHM fact sheet reports <strong>22.45% IPHS compliance
+    statewide</strong>, against a target of 25%.
+  </p>
+
+  <p>
+    These figures measure different things. Coverage tells us about
+    administrative reach. IPHS compliance tells us how assessed public
+    facilities perform against defined standards. One should not be used as a
+    substitute for the other.
+  </p>
+
+  <section id="visuals">
+    <h2>NUHM coverage</h2>
+
+    <p>
+      At the state level, the difference between the two coverage measures is
+      straightforward:
+    </p>
+
+    <DataTable
+      ariaLabel="Kerala NUHM coverage in August 2025"
+      columns={[
+        { key: "measure", label: "Measure" },
+        { key: "covered", label: "Covered" },
+        { key: "total", label: "Total" },
+        { key: "coverage", label: "Coverage" },
+      ]}
+      rows={[
+        { measure: "Urban wards", covered: "1,027", total: "3,525", coverage: "29.1%" },
+        { measure: "Urban population", covered: "3,255,368", total: "18,139,491", coverage: "17.9%" },
+      ]}
+    />
+
+    <BarChart
+      data={stateCoverage}
+      max={100}
+      title="NUHM coverage in Kerala, August 2025"
+      subtitle="Share reported as covered"
+      tag="STATE"
+      ariaLabel="NUHM urban ward and population coverage in Kerala"
+    />
+
+    <h2>The district picture</h2>
+
+    <p>
+      The district figures documented in the analysis show considerable
+      variation. The table below keeps the eight district pairs for which
+      both NUHM coverage and IPHS compliance values were documented.
+    </p>
+
+    <DataTable
+      ariaLabel="Selected Kerala district NUHM coverage and IPHS compliance"
+      columns={[
+        { key: "district", label: "District" },
+        { key: "coverage", label: "NUHM population coverage / Aug 2025" },
+        { key: "compliance", label: "IPHS compliance / Dec 2024" },
+      ]}
+      rows={tableRows}
+    />
+
+    <BarChart
+      data={districtCoverage}
+      max={50}
+      title="NUHM population coverage"
+      subtitle="Selected districts, August 2025 · hover a bar"
+      tag="8 DISTRICTS"
+      ariaLabel="NUHM population coverage across eight selected Kerala districts"
+      class="district-chart"
+    />
+
+    <p>
+      The contrast is useful, but it needs to be interpreted carefully. A
+      high NUHM coverage percentage does not mean that facilities are
+      adequately staffed, equipped or used. Similarly, a high IPHS compliance
+      percentage does not mean that every urban resident has easy access to
+      care.
+    </p>
+
+    <h2>Coverage and compliance do not line up neatly</h2>
+
+    <p>
+      The eight district pairs show why the two indicators should be kept
+      separate.
+    </p>
+
+    <ScatterPlot
+      data={scatterData}
+      xMax={50}
+      yMax={50}
+      xLabel="NUHM population coverage"
+      yLabel="IPHS compliance"
+      title="NUHM coverage vs IPHS compliance"
+      subtitle="Each point is one of the eight districts in the table above. Hover or focus a point."
+      tag="DISTRICT COMPARISON"
+      ariaLabel="Scatter plot comparing NUHM population coverage and IPHS compliance across eight Kerala districts"
+    />
+
+    <p>
+      The most visible contrast is between Idukki and Kottayam in this
+      selected set. The former has the highest reported NUHM population
+      coverage among these districts but a much lower IPHS compliance figure.
+      Kottayam has relatively low NUHM population coverage but the highest
+      IPHS compliance figure in the selected comparison.
+    </p>
+
+    <p>
+      That does <strong>not</strong> establish that expanding NUHM coverage
+      reduces compliance. The data is not designed to answer that question.
+    </p>
+
+    <h2>What these indicators tell us</h2>
+
+    <p>It helps to keep five separate questions apart:</p>
+
+    <div class="question-grid">
+      <div>
+        <span>01</span>
+        <strong>Coverage</strong>
+        <p>Is the population included in the NUHM coverage structure?</p>
+      </div>
+      <div>
+        <span>02</span>
+        <strong>Accessibility</strong>
+        <p>Can people reach the facility reasonably easily?</p>
+      </div>
+      <div>
+        <span>03</span>
+        <strong>Capacity</strong>
+        <p>Does the facility have the staff, infrastructure and supplies needed for its catchment?</p>
+      </div>
+      <div>
+        <span>04</span>
+        <strong>Quality</strong>
+        <p>Does the facility meet defined standards?</p>
+      </div>
+      <div>
+        <span>05</span>
+        <strong>Utilization</strong>
+        <p>Are people actually using the services?</p>
+      </div>
+    </div>
+
+    <p>
+      The two indicators used here answer only parts of the first and fourth
+      questions.
+    </p>
+
+    <h2>An important limitation</h2>
+
+    <p>
+      The IPHS figure is <strong>not a UPHC-specific compliance rate</strong>.
+    </p>
+
+    <p>
+      The December 2024 district-level assessment covers multiple
+      public-facility categories, including DH, CHC, PHC, UPHC, UHWC and SC.
+      Therefore, it would be incorrect to say that the figures above
+      represent the percentage of UPHCs in each district that meet IPHS.
+    </p>
+
+    <p>The comparison is more accurately described as:</p>
+
+    <blockquote>
+      <strong>NUHM urban-population coverage vs district-level public-facility IPHS compliance.</strong>
+    </blockquote>
+
+    <p>
+      There is also a time difference: the NUHM coverage figure is from
+      <strong>August 2025</strong>, while the IPHS compliance figure is from
+      <strong>December 2024</strong>.
+    </p>
+
+    <h2>What can be said from the data</h2>
+
+    <p>The data supports three relatively simple conclusions:</p>
+
+    <ol>
+      <li>NUHM population coverage varies substantially between districts.</li>
+      <li>NUHM coverage and reported IPHS compliance do not consistently move together in the selected district comparison.</li>
+      <li>Coverage alone is not enough to describe the condition or performance of urban primary-care facilities.</li>
+    </ol>
+
+    <p>
+      It does <strong>not</strong> establish why districts differ. Staffing,
+      infrastructure, geography, facility mix, reporting practices and other
+      factors could contribute, but those explanations require additional data.
+    </p>
+
+    <h2>Conclusion</h2>
+
+    <p>Coverage and compliance are different measurements.</p>
+
+    <p>
+      A district can have a large share of its urban population within the
+      NUHM coverage structure while still having a low reported IPHS
+      compliance rate. Another district can show the opposite pattern.
+    </p>
+
+    <p>
+      For urban health planning, this means that coverage figures should be
+      read alongside information on facility capacity, staffing,
+      accessibility, quality and utilization. Looking at only one of these
+      measures gives an incomplete picture.
+    </p>
+  </section>
+
+  <footer class="sources">
+    <h3>Sources</h3>
+
+    <p>
+      National Health Mission Kerala.
+      <strong>NUHM Fact Sheet — August 2025.</strong><br />
+      <a href="https://arogyakeralam.gov.in/wp-content/uploads/2025/11/NUHM-Fact-Sheet-Aug-2025.pdf" target="_blank" rel="noreferrer">PDF ↗</a>
+    </p>
+
+    <p>
+      National Health Mission Kerala.
+      <strong>NHM Fact Sheet — December 2024.</strong><br />
+      <a href="https://arogyakeralam.gov.in/wp-content/uploads/2025/01/NHM-Fact-sheet-December-2024.pdf" target="_blank" rel="noreferrer">PDF ↗</a>
+    </p>
+
+    <p>
+      Ministry of Health &amp; Family Welfare, Government of India.
+      <strong>Indian Public Health Standards (IPHS) 2022.</strong><br />
+      <a href="https://nhm.gov.in/images/pdf/guidelines/iphs/iphs-revised-guidlines-2022/02-CHC_IPHS_Guidelines-2022.pdf" target="_blank" rel="noreferrer">Guidelines ↗</a>
+    </p>
+  </footer>
+</div>
+
+<style>
+  .kerala-data-post {
+    font-size: 15px;
+    line-height: 1.82;
+  }
+
+  .kerala-data-post p { margin: 0 0 1.5em; }
+
+  .kerala-data-post h2 {
+    margin: 52px 0 18px;
+    color: var(--text);
+    font-size: 18px;
+    line-height: 1.4;
+    font-weight: 400;
+    letter-spacing: -0.012em;
+  }
+
+  .kerala-data-post strong { font-weight: 600; }
+
+  .question-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    margin: 32px 0 38px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .question-grid > div {
+    min-height: 150px;
+    padding: 17px 12px;
+    border-right: 1px solid var(--border);
+  }
+
+  .question-grid > div:last-child { border-right: 0; }
+
+  .question-grid span {
+    display: block;
+    margin-bottom: 30px;
+    color: var(--muted);
+    font-size: 9px;
+    letter-spacing: .07em;
+  }
+
+  .question-grid strong {
+    display: block;
+    margin-bottom: 7px;
+    font-size: 12px;
+  }
+
+  .question-grid p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 10px;
+    line-height: 1.55;
+  }
+
+  blockquote {
+    margin: 30px 0 36px;
+    padding: 15px 18px;
+    border-left: 2px solid var(--chart-accent);
+    background: color-mix(in srgb, var(--chart-accent) 4%, var(--background));
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .sources {
+    margin-top: 76px;
+    padding-top: 26px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.7;
+  }
+
+  .sources h3 {
+    margin: 0 0 18px;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .sources p { margin-bottom: 15px; }
+
+  .sources a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .sources a:hover { color: var(--chart-accent); }
+
+  @media (max-width: 850px) {
+    .question-grid { grid-template-columns: repeat(2, 1fr); }
+    .question-grid > div { border-bottom: 1px solid var(--border); }
+    .question-grid > div:nth-child(2n) { border-right: 0; }
+  }
+
+  @media (max-width: 600px) {
+    .kerala-data-post { font-size: 14.5px; line-height: 1.8; }
+    .kerala-data-post h2 { margin-top: 52px; font-size: 18px; }
+    .question-grid { grid-template-columns: 1fr; }
+    .question-grid > div { min-height: auto; border-right: 0; }
+    .question-grid span { margin-bottom: 15px; }
+  }
+</style>

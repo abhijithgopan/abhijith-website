@@ -1,5 +1,7 @@
 ---
 import "../styles/global.css";
+import SiteHeader from "../components/SiteHeader.astro";
+import ThemeInit from "../components/ThemeInit.astro";
 
 const photoModules = import.meta.glob(
   "../assets/photos/*.{jpg,jpeg,png,webp,avif}",
@@ -79,28 +81,8 @@ const metadata: Record<
     rel="stylesheet"
     href="https://rsms.me/inter/inter.css"
   />
-
-  <script is:inline>
-    (() => {
-      const savedTheme =
-        localStorage.getItem("theme");
-
-      const theme =
-        savedTheme ||
-        (
-          window.matchMedia(
-            "(prefers-color-scheme: dark)"
-          ).matches
-            ? "dark"
-            : "light"
-        );
-
-      document.documentElement.dataset.theme =
-        theme;
-    })();
-  </script>
-
-  <title>Photos — Abhijith</title>
+    <ThemeInit />
+<title>Photos — Abhijith</title>
 
   <meta
     name="description"
@@ -109,74 +91,8 @@ const metadata: Record<
 
   <style>
 
-    .site-brand {
-      display: flex;
-      align-items: center;
-
-      gap: 10px;
-
-      flex: 0 0 auto;
-
-      color: inherit;
-
-      text-decoration: none;
-
-      line-height: 1;
-    }
-
-
-    .site-brand:hover {
-      color: inherit;
-      text-decoration: none;
-    }
-
-
-    .site-title {
-      color: inherit;
-      text-decoration: none;
-    }
-
-
-    .profile-pic {
-      width: 36px;
-      height: 36px;
-
-      flex: 0 0 36px;
-
-      padding: 2px;
-
-      display: block;
-
-      background: linear-gradient(
-        135deg,
-        #00e5ff 0%,
-        #009cff 30%,
-        #0066ff 58%,
-        #3155ff 80%,
-        #635bff 100%
-      );
-
-      border-radius: 50%;
-    }
-
-
-    .profile-pic img {
-      display: block;
-
-      width: 32px;
-      height: 32px;
-
-      margin: 0;
-      padding: 0;
-
-      object-fit: cover;
-
-      border: 0;
-      border-radius: 50%;
-    }
-
-
     /* ==================================================
+       Photos page/* ==================================================
        Photos page
     ================================================== */
 
@@ -520,155 +436,7 @@ const metadata: Record<
     /* ==================================================
        Mobile
     ================================================== */
-
-    @media (max-width: 600px) {
-
-      .site-header {
-        gap: 8px;
-      }
-
-
-      .site-brand {
-        gap: 6px;
-      }
-
-
-      .profile-pic {
-        width: 26px;
-        height: 26px;
-
-        flex: 0 0 26px;
-
-        padding: 2px;
-      }
-
-
-      .profile-pic img {
-        width: 22px;
-        height: 22px;
-      }
-
-
-      .site-title {
-        font-size: 17px;
-      }
-
-
-      .header-right {
-        gap: 6px;
-        min-width: 0;
-      }
-
-
-      nav {
-        gap: 8px;
-      }
-
-
-      nav a {
-        font-size: 13px;
-      }
-
-
-      .theme-toggle {
-        width: 18px;
-        height: 18px;
-
-        flex: 0 0 18px;
-      }
-
-
-      .theme-toggle svg {
-        width: 15px;
-        height: 15px;
-      }
-
-
-      .photos-page-header {
-        margin-bottom: 30px;
-      }
-
-
-      .photo-grid {
-        grid-template-columns:
-          repeat(2, minmax(0, 1fr));
-
-        gap: 7px;
-      }
-
-
-      .photo-viewer {
-        display: flex;
-
-        flex-direction: column;
-
-        justify-content: center;
-
-        padding: 30px 42px 100px;
-
-        gap: 18px;
-      }
-
-
-      .photo-viewer-image {
-        width: auto;
-        height: auto;
-
-        max-width: 88vw;
-        max-height: 72vh;
-      }
-
-
-      .photo-viewer-meta {
-        width: 100%;
-
-        text-align: center;
-      }
-
-
-      .photo-viewer-meta-caption {
-        margin-bottom: 6px;
-
-        font-size: 14px;
-        line-height: 1.45;
-      }
-
-
-      .photo-viewer-meta-location {
-        margin-bottom: 4px;
-
-        font-size: 12px;
-      }
-
-
-      .photo-viewer-meta-details {
-        font-size: 11px;
-      }
-
-
-      .photo-viewer-close {
-        top: 10px;
-        right: 10px;
-      }
-
-
-      .photo-viewer-prev {
-        left: 4px;
-      }
-
-
-      .photo-viewer-next {
-        right: 4px;
-      }
-
-
-      .photo-viewer-counter {
-        bottom: 12px;
-      }
-
-    }
-
-  </style>
+</style>
 
 </head>
 
@@ -681,101 +449,7 @@ const metadata: Record<
          Header
     ================================================== -->
 
-    <header class="site-header">
-
-      <a href="/" class="site-brand">
-
-        <span class="profile-pic">
-          <img
-            src="/profile.png"
-            alt="Abhijith"
-          />
-        </span>
-
-        <span class="site-title">
-          Abhijith
-        </span>
-
-      </a>
-
-
-      <div class="header-right">
-
-        <nav>
-
-          <a href="/">
-            home
-          </a>
-
-          <a href="/blog">
-            blog
-          </a>
-
-          <a
-            href="/photos"
-            class="active"
-          >
-            photos
-          </a>
-
-          <a href="/now">
-            now
-          </a>
-
-        </nav>
-
-
-        <button
-          class="theme-toggle"
-          type="button"
-          aria-label="Switch to dark mode"
-          title="Switch to dark mode"
-        >
-
-          <svg
-            class="theme-icon-moon"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path
-              d="M21 12.8A8.5 8.5 0 0 1 11.2 3a8.5 8.5 0 1 0 9.8 9.8Z"
-            />
-          </svg>
-
-
-          <svg
-            class="theme-icon-sun"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-
-            <circle
-              cx="12"
-              cy="12"
-              r="4"
-            />
-
-            <path d="M12 2v2" />
-            <path d="M12 20v2" />
-            <path d="M4.93 4.93l1.41 1.41" />
-            <path d="M17.66 17.66l1.41 1.41" />
-            <path d="M2 12h2" />
-            <path d="M20 12h2" />
-            <path d="M6.34 17.66l-1.41 1.41" />
-            <path d="M19.07 4.93l-1.41-1.41" />
-
-          </svg>
-
-
-          <span class="sr-only">
-            Toggle colour theme
-          </span>
-
-        </button>
-
-      </div>
-
-    </header>
+    <SiteHeader active="photos" />
 
 
     <!-- ==================================================
@@ -949,72 +623,6 @@ const metadata: Record<
 
 
   <script is:inline>
-
-    /* ==================================================
-       Theme switcher
-    ================================================== */
-
-    const themeButton =
-      document.querySelector(".theme-toggle");
-
-
-    function updateThemeButton() {
-
-      const isDark =
-        document.documentElement.dataset.theme === "dark";
-
-
-      themeButton.setAttribute(
-        "aria-label",
-        isDark
-          ? "Switch to light mode"
-          : "Switch to dark mode"
-      );
-
-
-      themeButton.setAttribute(
-        "title",
-        isDark
-          ? "Switch to light mode"
-          : "Switch to dark mode"
-      );
-
-    }
-
-
-    themeButton.addEventListener(
-      "click",
-      () => {
-
-        const isDark =
-          document.documentElement.dataset.theme === "dark";
-
-
-        const newTheme =
-          isDark
-            ? "light"
-            : "dark";
-
-
-        document.documentElement.dataset.theme =
-          newTheme;
-
-
-        localStorage.setItem(
-          "theme",
-          newTheme
-        );
-
-
-        updateThemeButton();
-
-      }
-    );
-
-
-    updateThemeButton();
-
-
     /* ==================================================
        Photo viewer
     ================================================== */
