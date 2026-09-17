@@ -1307,7 +1307,8 @@ html[data-theme="dark"] .weather-footer .delhi-skyline {
   display: grid;
   grid-template-columns: minmax(150px, 0.72fr) minmax(0, 2fr);
   align-items: end;
-  gap: 42px;
+  column-gap: 42px;
+  row-gap: 12px;
   margin-top: 58px;
   padding: 46px 0 54px;
   border-top: 1px solid var(--border);
@@ -1333,8 +1334,10 @@ html[data-theme="dark"] .weather-footer .delhi-skyline {
 }
 
 .library-link {
+  grid-column: 2;
   display: inline-block;
-  margin-top: 28px;
+  justify-self: start;
+  margin-top: 0;
   color: #00a9c7;
   font-size: 13px;
   text-decoration: none;
@@ -1430,9 +1433,14 @@ html[data-theme="dark"] .weather-footer .delhi-skyline {
 }
 
 @media (max-width: 800px) {
+  .library-link {
+    grid-column: 1;
+    margin-top: 0;
+  }
+
   .library-shelf {
     grid-template-columns: 1fr;
-    gap: 30px;
+    gap: 18px;
   }
 
   .library-intro {
@@ -1449,7 +1457,7 @@ html[data-theme="dark"] .weather-footer .delhi-skyline {
   }
 
   .bookshelf {
-    min-height: 180px;
+    min-height: 145px;
   }
 }
 
@@ -1465,9 +1473,14 @@ html[data-theme="dark"] .weather-footer .delhi-skyline {
   }
 
   .shelf-book {
-    flex-basis: calc((100% - 12px) / 4);
+    flex-basis: calc((100% - 12px) / 5);
     width: auto;
     max-width: 92px;
+  }
+
+  .library-link {
+    grid-column: 1;
+    margin-top: 0;
   }
 }
 
