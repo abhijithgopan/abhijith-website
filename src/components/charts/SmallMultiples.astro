@@ -1,0 +1,19 @@
+---
+interface Series { label: string; data: { label: string; value: number }[]; }
+interface Props { series: Series[]; title?: string; subtitle?: string; suffix?: string; decimals?: number; caption?: string; }
+const { series, title, subtitle, suffix = "", decimals = 1, caption } = Astro.props;
+const format = (v:number) => `${v.toFixed(decimals)}${suffix}`;
+---
+<figure class="chart-surface chart-small-multiples">
+  {(title || subtitle) && <header class="chart-heading"><div>{title && <div class="chart-title">{title}</div>}{subtitle && <div class="chart-subtitle">{subtitle}</div>}</div></header>}
+  <div class="multiple-grid">
+    {series.map((item) => {
+      const max = Math.max(...item.data.map(d => d.value), 1);
+      return <section class="multiple" aria-label={item.label}><h3>{item.label}</h3><div class="multiple-bars">{item.data.map(d => <div class="multiple-row" title={`${d.label}: ${format(d.value)}`}><span>{d.label}</span><i style={`--value:${Math.max(0, Math.min(100, d.value/max*100))}%`}></i><b>{format(d.value)}</b></div>)}</div></section>;
+    })}
+  </div>
+  {caption && <figcaption class="chart-caption">{caption}</figcaption>}
+</figure>
+<style>
+.multiple-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:26px}.multiple{min-width:0}.multiple h3{margin:0 0 13px;font-size:11px;font-weight:600}.multiple-bars{display:grid;gap:8px}.multiple-row{display:grid;grid-template-columns:72px minmax(0,1fr) 42px;align-items:center;gap:8px;font-size:9px}.multiple-row i{display:block;height:6px;border-radius:99px;background:var(--chart-neutral);transform-origin:left;transform:scaleX(0);animation:multiple-in 600ms ease forwards}.multiple-row b{text-align:right;font-weight:500;font-variant-numeric:tabular-nums}.multiple-row:hover i{background:var(--chart-accent)}@keyframes multiple-in{to{transform:scaleX(1)}}@media(prefers-reduced-motion:reduce){.multiple-row i{animation:none;transform:none}}
+</style>

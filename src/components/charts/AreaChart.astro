@@ -1,0 +1,46 @@
+---
+interface Datum { label: string; value: number; }
+interface Props {
+  data: Datum[];
+  title?: string;
+  subtitle?: string;
+  tag?: string;
+  suffix?: string;
+  decimals?: number;
+  ariaLabel?: string;
+  caption?: string;
+  baseline?: number;
+}
+const { data, title, subtitle, tag, suffix = "", decimals = 1, ariaLabel = "Area chart", caption, baseline = 0 } = Astro.props;
+const width = 720;
+const height = 330;
+const pad = { left: 52, right: 18, top: 24, bottom: 46 };
+const max = Math.max(...data.map(d => d.value), baseline, 1);
+const min = Math.min(...data.map(d => d.value), baseline);
+const range = max - min || 1;
+const x = (i: number) => pad.left + (data.length === 1 ? 0 : i / (data.length - 1)) * (width - pad.left - pad.right);
+const y = (v: number) => pad.top + (max - v) / range * (height - pad.top - pad.bottom);
+const points = data.map((d, i) => `${x(i)},${y(d.value)}`).join(" ");
+const area = `${pad.left},${y(baseline)} ${points} ${x(data.length - 1)},${y(baseline)}`;
+const format = (v: number) => `${v.toFixed(decimals)}${suffix}`;
+---
+<figure class="chart-surface chart-area">
+  {(title || subtitle || tag) && <header class="chart-heading"><div>{title && <div class="chart-title">{title}</div>}{subtitle && <div class="chart-subtitle">{subtitle}</div>}</div>{tag && <span class="chart-tag">{tag}</span>}</header>}
+  <div class="area-wrap">
+    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={ariaLabel}>
+      <line class="baseline" x1={pad.left} x2={width - pad.right} y1={y(baseline)} y2={y(baseline)} />
+      <polygon class="area-fill" points={area} />
+      <polyline class="area-line" points={points} />
+      {data.map((d, i) => <circle cx={x(i)} cy={y(d.value)} r="4.5" tabindex="0" data-label={d.label} data-value={format(d.value)} aria-label={`${d.label}: ${format(d.value)}`} />)}
+      {data.map((d, i) => <text class="x-label" x={x(i)} y={height - 15}>{d.label}</text>)}
+    </svg>
+    <div class="area-tip" hidden></div>
+  </div>
+  {caption && <figcaption class="chart-caption">{caption}</figcaption>}
+</figure>
+<style>
+.area-wrap{position:relative;width:100%;overflow-x:auto}.area-wrap svg{display:block;width:100%;min-width:560px;height:auto}.baseline{stroke:var(--border);stroke-dasharray:3 4}.area-fill{fill:var(--chart-accent);opacity:.08}.area-line{fill:none;stroke:var(--chart-neutral);stroke-width:1.7}.chart-area circle{fill:var(--background);stroke:var(--chart-neutral);stroke-width:1.8;cursor:pointer;transition:all 140ms ease}.chart-area circle:hover,.chart-area circle:focus{fill:var(--chart-accent);stroke:var(--chart-accent);r:6;outline:none}.x-label{fill:var(--muted);font-size:9px;text-anchor:middle}.area-tip{position:fixed;z-index:50;padding:7px 9px;border:1px solid var(--chart-tooltip-border);border-radius:5px;background:var(--chart-tooltip-bg);color:var(--chart-tooltip-text);font-size:11px;pointer-events:none}
+</style>
+<script>
+document.querySelectorAll<HTMLElement>('.chart-area').forEach(chart=>{const tip=chart.querySelector<HTMLElement>('.area-tip');chart.querySelectorAll<SVGCircleElement>('circle').forEach(p=>{const show=()=>{if(!tip)return;tip.hidden=false;tip.textContent=`${p.dataset.label}: ${p.dataset.value}`;const r=p.getBoundingClientRect();tip.style.left=`${Math.min(innerWidth-190,Math.max(10,r.left+8))}px`;tip.style.top=`${Math.max(10,r.top-38)}px`};const hide=()=>{if(tip)tip.hidden=true};p.addEventListener('mouseenter',show);p.addEventListener('mouseleave',hide);p.addEventListener('focus',show);p.addEventListener('blur',hide)})});
+</script>

@@ -1,0 +1,6 @@
+---
+import GeoMap from './GeoMap.astro';
+interface Props { data?: {id?:string;label:string;value?:number|null}[]; title?:string; subtitle?:string; tag?:string; suffix?:string; decimals?:number; caption?:string; drilldown?:boolean; drilldownUrls?:Record<string,string>; }
+const { data=[], title, subtitle, tag, suffix='%', decimals=1, caption, drilldown=false, drilldownUrls={} } = Astro.props;
+---
+<GeoMap url="https://cdn.jsdelivr.net/gh/udit-001/india-maps-data@2884453/geojson/india.geojson" {data} {title} {subtitle} {tag} {suffix} {decimals} {caption} drilldown={drilldown} drilldownUrls={drilldownUrls} propertyKeys={['name','NAME_1','ST_NM','STNAME','state']} ariaLabel="Interactive map of India" />

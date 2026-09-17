@@ -5,6 +5,9 @@
   --chart-accent: #00a9c7;
   --chart-neutral: var(--muted);
   --chart-track: var(--border);
+  --chart-tooltip-bg: var(--text);
+  --chart-tooltip-text: var(--background);
+  --chart-tooltip-border: color-mix(in srgb, var(--background) 18%, transparent);
 }
 
 .chart-surface {
@@ -22,28 +25,16 @@
   margin-bottom: 27px;
 }
 
-.chart-title {
-  font-size: 12px;
-  line-height: 1.4;
-  font-weight: 600;
-}
-
-.chart-subtitle {
-  margin-top: 4px;
-  color: var(--muted);
-  font-size: 11px;
-  line-height: 1.5;
-}
-
-.chart-tag {
-  flex: 0 0 auto;
-  color: var(--muted);
-  font-size: 9px;
-  letter-spacing: .09em;
-}
+.chart-title { font-size: 12px; line-height: 1.4; font-weight: 600; }
+.chart-subtitle { margin-top: 4px; color: var(--muted); font-size: 11px; line-height: 1.5; }
+.chart-tag { flex: 0 0 auto; color: var(--muted); font-size: 9px; letter-spacing: .09em; }
+.chart-caption { margin-top: 12px; color: var(--muted); font-size: 10px; line-height: 1.55; }
 
 @media (max-width: 600px) {
   .chart-surface { margin: 36px 0 40px; padding: 21px 0 23px; }
   .chart-heading { display: block; }
   .chart-tag { display: block; margin-top: 7px; }
 }
+
+/* Map/chart helpers are intentionally neutral; the accent is reserved for data and interaction. */
+.chart-surface + .chart-surface { margin-top: 28px; }

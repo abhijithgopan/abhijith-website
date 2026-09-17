@@ -1,0 +1,8 @@
+---
+interface Props { children: any; type?: "note" | "source" | "caveat"; }
+const { type = "note" } = Astro.props;
+---
+<div class={`chart-note chart-note-${type}`}><span class="note-mark" aria-hidden="true"></span><div><slot /></div></div>
+<style>
+.chart-note{display:flex;gap:9px;margin:12px 0 28px;color:var(--muted);font-size:10px;line-height:1.55}.note-mark{width:5px;height:5px;flex:0 0 5px;margin-top:5px;border-radius:50%;background:var(--chart-accent)}.chart-note-source{font-size:9px}.chart-note-caveat{padding:10px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+</style>

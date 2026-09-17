@@ -1,0 +1,27 @@
+---
+interface Props {
+  title?: string;
+  subtitle?: string;
+  tag?: string;
+  caption?: string;
+  class?: string;
+}
+
+const { title, subtitle, tag, caption, class: className = "" } = Astro.props;
+---
+
+<figure class={`chart-surface ${className}`.trim()}>
+  {(title || subtitle || tag) && (
+    <header class="chart-heading">
+      <div>
+        {title && <div class="chart-title">{title}</div>}
+        {subtitle && <div class="chart-subtitle">{subtitle}</div>}
+      </div>
+      {tag && <span class="chart-tag">{tag}</span>}
+    </header>
+  )}
+
+  <slot />
+
+  {caption && <figcaption class="chart-caption">{caption}</figcaption>}
+</figure>

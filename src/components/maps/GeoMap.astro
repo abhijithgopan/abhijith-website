@@ -1,0 +1,73 @@
+---
+interface GeoDatum { id?: string; label: string; value?: number | null; }
+interface Props {
+  url: string;
+  data?: GeoDatum[];
+  title?: string;
+  subtitle?: string;
+  tag?: string;
+  suffix?: string;
+  decimals?: number;
+  ariaLabel?: string;
+  caption?: string;
+  propertyKeys?: string[];
+  height?: number;
+  showLegend?: boolean;
+  minValue?: number;
+  maxValue?: number;
+  drilldown?: boolean;
+  drilldownUrls?: Record<string,string>;
+}
+const { url, data = [], title, subtitle, tag, suffix = "", decimals = 1, ariaLabel = "Geographic map", caption, propertyKeys = ["name","NAME_1","ST_NM","STNAME","district","DISTRICT","DTNAME","state"], height = 460, showLegend = true, minValue, maxValue, drilldown = false, drilldownUrls = {} } = Astro.props;
+const payload = JSON.stringify({url,data,title,subtitle,tag,suffix,decimals,ariaLabel,propertyKeys,height,showLegend,minValue,maxValue,drilldown,drilldownUrls}).replace(/</g,"\\u003c");
+---
+<figure class="chart-surface geo-map" data-map={payload}>
+  {(title || subtitle || tag) && <header class="chart-heading"><div>{title && <div class="chart-title">{title}</div>}{subtitle && <div class="chart-subtitle">{subtitle}</div>}</div>{tag && <span class="chart-tag">{tag}</span>}</header>}
+  <div class="map-stage" style={`--map-height:${height}px`}><div class="map-loading">Loading map…</div><div class="map-tooltip" hidden></div></div>
+  {showLegend && <div class="map-legend"><span class="legend-low">low</span><i></i><span class="legend-high">high</span></div>}
+  {drilldown && <div class="map-hint">Select a region to explore its boundaries.</div>}
+  {caption && <figcaption class="chart-caption">{caption}</figcaption>}
+</figure>
+<script is:inline>
+(() => {
+  const init = (root) => {
+    const config = JSON.parse(root.dataset.map || '{}');
+    const stage = root.querySelector('.map-stage');
+    if (!stage) return;
+    const loading = root.querySelector('.map-loading');
+    const tip = root.querySelector('.map-tooltip');
+    const keys = config.propertyKeys || ['name'];
+    const findName = (props) => { for (const key of keys) if (props && props[key] != null) return String(props[key]); return 'Unknown'; };
+    const findValue = (name, props) => {
+      const rows = config.data || [];
+      const normalized = name.trim().toLowerCase();
+      const row = rows.find(d => String(d.label ?? '').trim().toLowerCase() === normalized || String(d.id ?? '').trim().toLowerCase() === normalized);
+      if (row) return row.value == null ? null : Number(row.value);
+      const propId = props && (props.id || props.ID || props.code || props.ST_CEN_CD || props.DT_CEN_CD);
+      const byId = rows.find(d => propId != null && String(d.id ?? '').trim().toLowerCase() === String(propId).trim().toLowerCase());
+      return byId ? (byId.value == null ? null : Number(byId.value)) : null;
+    };
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const flatten = (coords, out=[]) => { if (typeof coords[0] === 'number') out.push(coords); else coords.forEach(c => flatten(c,out)); return out; };
+    const ringPath = (ring, project) => ring.map((p,i) => `${i?'L':'M'}${project(p[0],p[1]).join(',')}`).join(' ') + 'Z';
+    const geometryPath = (geom, project) => { if (!geom) return ''; if (geom.type==='Polygon') return geom.coordinates.map(r=>ringPath(r,project)).join(' '); if (geom.type==='MultiPolygon') return geom.coordinates.flat().map(r=>ringPath(r,project)).join(' '); return ''; };
+    const bbox = (features) => { let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity; features.forEach(f=>flatten(f.geometry?.coordinates||[]).forEach(p=>{minX=Math.min(minX,p[0]);maxX=Math.max(maxX,p[0]);minY=Math.min(minY,p[1]);maxY=Math.max(maxY,p[1])})); return [minX,minY,maxX,maxY]; };
+    const render = geo => {
+      const features = (geo.features || []).filter(f => f.geometry && (f.geometry.type==='Polygon' || f.geometry.type==='MultiPolygon'));
+      if (!features.length) throw new Error('No polygon features found.');
+      const [minX,minY,maxX,maxY] = bbox(features); const W=760,H=Number(config.height)||460,pad=18; const dx=maxX-minX||1,dy=maxY-minY||1; const scale=Math.min((W-pad*2)/dx,(H-pad*2)/dy); const ox=(W-dx*scale)/2,oy=(H-dy*scale)/2; const project=(lon,lat)=>[ox+(lon-minX)*scale,oy+(maxY-lat)*scale];
+      const vals=features.map(f=>findValue(findName(f.properties||{}),f.properties||{})).filter(v=>Number.isFinite(v)); const lo=Number.isFinite(Number(config.minValue))?Number(config.minValue):(vals.length?Math.min(...vals):0); const hi=Number.isFinite(Number(config.maxValue))?Number(config.maxValue):(vals.length?Math.max(...vals):1); const span=hi-lo||1;
+      const paths=features.map((f,i)=>{const props=f.properties||{},name=findName(props),value=findValue(name,props),ratio=Number.isFinite(value)?Math.max(0,Math.min(1,(value-lo)/span)):null; const alpha=ratio==null?.08:(.14+ratio*.72); const d=geometryPath(f.geometry,project); const encoded=encodeURIComponent(JSON.stringify({name,value,props})); return `<path class="geo-feature" d="${d}" data-info="${encoded}" style="--map-alpha:${alpha}" tabindex="0" role="img" aria-label="${esc(name)}${Number.isFinite(value)?`: ${value.toFixed(config.decimals??1)}${config.suffix??''}`:''}"/>`;}).join('');
+      stage.innerHTML=`<svg class="geo-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(config.ariaLabel||'Geographic map')}">${paths}</svg><div class="map-tooltip" hidden></div>`;
+      const svg=stage.querySelector('svg'); svg?.querySelectorAll('.geo-feature').forEach(el=>{ const info=JSON.parse(decodeURIComponent(el.getAttribute('data-info')||'{}')); const show=()=>{const t=stage.querySelector('.map-tooltip'); if(!t)return; t.hidden=false; t.innerHTML=`<strong>${esc(info.name)}</strong>${Number.isFinite(info.value)?`<br>${info.value.toFixed(config.decimals??1)}${esc(config.suffix??'')}`:''}`; const r=el.getBoundingClientRect(); t.style.left=`${Math.min(innerWidth-190,Math.max(10,r.left+r.width/2-75))}px`; t.style.top=`${Math.max(10,r.top-48)}px`; el.classList.add('is-active');}; const hide=()=>{const t=stage.querySelector('.map-tooltip');if(t)t.hidden=true;el.classList.remove('is-active')}; el.addEventListener('mouseenter',show);el.addEventListener('mouseleave',hide);el.addEventListener('focus',show);el.addEventListener('blur',hide); el.addEventListener('click',()=>{if(config.drilldown){const url=config.drilldownUrls?.[info.name]||config.drilldownUrls?.[info.name.toLowerCase()];if(url) load(url)}}); });
+      if(loading) loading.remove();
+    };
+    const load = async (u=config.url) => { stage.innerHTML='<div class="map-loading">Loading map…</div>'; try { const res=await fetch(u); if(!res.ok) throw new Error(`Map request failed: ${res.status}`); const geo=await res.json(); render(geo); } catch(err) { stage.innerHTML='<div class="map-error">Map data could not be loaded.</div>'; console.error(err); } };
+    load();
+  };
+  document.querySelectorAll('.geo-map').forEach(init);
+})();
+</script>
+<style>
+.map-stage{position:relative;min-height:var(--map-height);display:grid;place-items:center;overflow:hidden}.geo-svg{display:block;width:100%;height:auto;max-height:var(--map-height)}.geo-feature{fill:var(--chart-accent);fill-opacity:var(--map-alpha,.08);stroke:var(--background);stroke-width:.8;vector-effect:non-scaling-stroke;cursor:pointer;transition:fill-opacity 140ms ease,stroke 140ms ease}.geo-feature:hover,.geo-feature:focus,.geo-feature.is-active{fill-opacity:.82;stroke:var(--chart-accent);stroke-width:1.4;outline:none}.map-loading,.map-error{color:var(--muted);font-size:10px}.map-tooltip{position:fixed;z-index:60;padding:7px 9px;border:1px solid var(--chart-tooltip-border);border-radius:5px;background:var(--chart-tooltip-bg);color:var(--chart-tooltip-text);font-size:11px;line-height:1.45;pointer-events:none}.map-legend{display:flex;align-items:center;gap:8px;margin-top:9px;color:var(--muted);font-size:9px}.map-legend i{display:block;width:100px;height:6px;border-radius:99px;background:linear-gradient(90deg,color-mix(in srgb,var(--chart-accent) 14%,var(--chart-track)),var(--chart-accent))}.map-hint{margin-top:8px;color:var(--muted);font-size:9px}.map-error{padding:40px 0}@media(max-width:600px){.map-stage{min-height:320px}.geo-svg{min-width:540px;width:130%}.map-legend i{width:75px}}
+</style>

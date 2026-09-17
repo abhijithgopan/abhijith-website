@@ -2,67 +2,129 @@
 interface Column {
   key: string;
   label: string;
+  numeric?: boolean;
 }
 
 interface Props {
   columns: Column[];
   rows: Record<string, string | number>[];
   ariaLabel?: string;
+  sortable?: boolean;
+  searchable?: boolean;
+  searchPlaceholder?: string;
+  caption?: string;
 }
 
-const { columns, rows, ariaLabel = "Data table" } = Astro.props;
+const {
+  columns,
+  rows,
+  ariaLabel = "Data table",
+  sortable = false,
+  searchable = false,
+  searchPlaceholder = "Search table…",
+  caption,
+} = Astro.props;
 ---
 
-<div class="chart-table-wrap">
-  <table aria-label={ariaLabel}>
-    <thead>
-      <tr>
-        {columns.map((column) => <th scope="col">{column.label}</th>)}
-      </tr>
-    </thead>
-    <tbody>
-      {rows.map((row) => (
+<div class="chart-table-block">
+  {(searchable || sortable) && (
+    <div class="table-tools">
+      {searchable && (
+        <label class="table-search">
+          <span class="sr-only">Search table</span>
+          <input type="search" placeholder={searchPlaceholder} data-table-search />
+        </label>
+      )}
+      {sortable && <span class="table-hint">Click a heading to sort</span>}
+    </div>
+  )}
+
+  <div class="chart-table-wrap">
+    <table aria-label={ariaLabel} data-sortable={sortable ? "true" : "false"}>
+      <thead>
         <tr>
           {columns.map((column, index) => (
-            <td class:list={{ numeric: index > 0 }}>{row[column.key]}</td>
+            <th scope="col" data-column-index={index} data-numeric={column.numeric ? "true" : "false"}>
+              {sortable ? <button type="button" class="sort-button">{column.label}<span aria-hidden="true">↕</span></button> : column.label}
+            </th>
           ))}
         </tr>
-      ))}
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        {rows.map((row) => (
+          <tr>
+            {columns.map((column) => (
+              <td class:list={{ numeric: column.numeric }}>{row[column.key]}</td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  {caption && <div class="chart-caption">{caption}</div>}
 </div>
 
 <style>
-  .chart-table-wrap {
-    margin: 28px 0 36px;
-    overflow-x: auto;
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-    line-height: 1.5;
-  }
-
-  th,
-  td {
-    padding: 11px 9px;
-    text-align: left;
-    vertical-align: top;
-    border-bottom: 1px solid var(--border);
-  }
-
-  th {
-    color: var(--muted);
-    font-size: 10px;
-    font-weight: 500;
-    letter-spacing: .05em;
-    text-transform: uppercase;
-  }
-
+  .chart-table-block { margin: 28px 0 36px; }
+  .table-tools { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 9px; }
+  .table-search input { width: min(250px, 100%); padding: 7px 9px; border: 1px solid var(--border); border-radius: 4px; background: var(--background); color: var(--text); font: inherit; font-size: 11px; outline: none; }
+  .table-search input:focus { border-color: var(--chart-accent); }
+  .table-hint { color: var(--muted); font-size: 10px; }
+  .chart-table-wrap { overflow-x: auto; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; line-height: 1.5; }
+  th, td { padding: 11px 9px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-size: 10px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; }
   tbody tr:last-child td { border-bottom: 0; }
   td.numeric { font-variant-numeric: tabular-nums; }
+  .sort-button { display: inline-flex; align-items: center; gap: 5px; padding: 0; border: 0; background: none; color: inherit; font: inherit; letter-spacing: inherit; text-transform: inherit; cursor: pointer; }
+  .sort-button span { opacity: .45; font-size: 10px; }
+  .sort-button:hover, .sort-button:focus-visible { color: var(--text); outline: none; }
+  .chart-caption { margin-top: 11px; color: var(--muted); font-size: 10px; line-height: 1.5; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+  @media (max-width: 600px) { .table-tools { display: block; } .table-hint { display: block; margin-top: 7px; } }
 </style>
+
+<script>
+  document.querySelectorAll<HTMLElement>(".chart-table-block").forEach((block) => {
+    const table = block.querySelector<HTMLTableElement>("table");
+    const search = block.querySelector<HTMLInputElement>("[data-table-search]");
+    if (!table) return;
+    const tbody = table.tBodies[0];
+
+    search?.addEventListener("input", () => {
+      const query = search.value.trim().toLowerCase();
+      Array.from(tbody.rows).forEach((row) => {
+        row.hidden = query.length > 0 && !row.textContent?.toLowerCase().includes(query);
+      });
+    });
+
+    if (table.dataset.sortable !== "true") return;
+
+    table.querySelectorAll<HTMLButtonElement>(".sort-button").forEach((button) => {
+      button.addEventListener("click", () => {
+        const th = button.closest("th");
+        if (!th) return;
+        const index = Number(th.dataset.columnIndex);
+        const numeric = th.dataset.numeric === "true";
+        const rows = Array.from(tbody.rows);
+        const ascending = button.dataset.direction !== "asc";
+        button.dataset.direction = ascending ? "asc" : "desc";
+        button.querySelector("span")!.textContent = ascending ? "↑" : "↓";
+
+        rows.sort((a, b) => {
+          const aText = a.cells[index]?.textContent?.trim() ?? "";
+          const bText = b.cells[index]?.textContent?.trim() ?? "";
+          if (numeric) {
+            const aNum = Number.parseFloat(aText.replace(/[^0-9.-]/g, ""));
+            const bNum = Number.parseFloat(bText.replace(/[^0-9.-]/g, ""));
+            return (aNum - bNum) * (ascending ? 1 : -1);
+          }
+          return aText.localeCompare(bText, undefined, { numeric: true, sensitivity: "base" }) * (ascending ? 1 : -1);
+        });
+
+        rows.forEach((row) => tbody.appendChild(row));
+      });
+    });
+  });
+</script>

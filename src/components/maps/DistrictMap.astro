@@ -1,0 +1,6 @@
+---
+import StateMap from './StateMap.astro';
+interface Props { state:string; data?:{id?:string;label:string;value?:number|null}[]; title?:string; subtitle?:string; tag?:string; suffix?:string; decimals?:number; caption?:string; }
+const { state, data=[], title, subtitle, tag, suffix='%', decimals=1, caption } = Astro.props;
+---
+<StateMap {state} {data} {title} {subtitle} {tag} {suffix} {decimals} {caption} />

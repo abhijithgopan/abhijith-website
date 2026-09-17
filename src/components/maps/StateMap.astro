@@ -1,0 +1,11 @@
+---
+import GeoMap from './GeoMap.astro';
+const states: Record<string,string> = {
+  'Andhra Pradesh':'andhra-pradesh','Arunachal Pradesh':'arunachal-pradesh','Assam':'assam','Bihar':'bihar','Chhattisgarh':'chhattisgarh','Goa':'goa','Gujarat':'gujarat','Haryana':'haryana','Himachal Pradesh':'himachal-pradesh','Jharkhand':'jharkhand','Karnataka':'karnataka','Kerala':'kerala','Madhya Pradesh':'madhya-pradesh','Maharashtra':'maharashtra','Manipur':'manipur','Meghalaya':'meghalaya','Mizoram':'mizoram','Nagaland':'nagaland','Odisha':'odisha','Punjab':'punjab','Rajasthan':'rajasthan','Sikkim':'sikkim','Tamil Nadu':'tamil-nadu','Telangana':'telangana','Tripura':'tripura','Uttarakhand':'uttarakhand','Uttar Pradesh':'uttar-pradesh','West Bengal':'west-bengal','Andaman and Nicobar Islands':'andaman-and-nicobar-islands','Chandigarh':'chandigarh','Dadra & Nagar Haveli and Daman & Diu':'dadra-nagar-haveli-daman-diu','Delhi':'delhi','Jammu and Kashmir':'jammu-and-kashmir','Ladakh':'ladakh','Lakshadweep':'lakshadweep','Puducherry':'puducherry'
+};
+interface Props { state:string; data?:{id?:string;label:string;value?:number|null}[]; title?:string; subtitle?:string; tag?:string; suffix?:string; decimals?:number; caption?:string; }
+const { state, data=[], title, subtitle, tag, suffix='%', decimals=1, caption } = Astro.props;
+const slug=states[state];
+const url=slug ? `https://cdn.jsdelivr.net/gh/udit-001/india-maps-data@2884453/geojson/states/${slug}.geojson` : '';
+---
+<GeoMap url={url} {data} {title} {subtitle} {tag} {suffix} {decimals} {caption} propertyKeys={['name','NAME_2','DISTRICT','district','DTNAME','NAME_1']} ariaLabel={`Interactive map of ${state}`} />

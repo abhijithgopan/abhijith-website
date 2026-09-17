@@ -9,49 +9,64 @@ interface Props {
   data: ScatterDatum[];
   xMax: number;
   yMax: number;
+  xMin?: number;
+  yMin?: number;
   xLabel: string;
   yLabel: string;
   title?: string;
   subtitle?: string;
   tag?: string;
+  xSuffix?: string;
+  ySuffix?: string;
+  decimals?: number;
   ariaLabel?: string;
+  caption?: string;
 }
 
 const {
   data,
   xMax,
   yMax,
+  xMin = 0,
+  yMin = 0,
   xLabel,
   yLabel,
   title,
   subtitle,
   tag,
+  xSuffix = "%",
+  ySuffix = "%",
+  decimals = 1,
   ariaLabel = "Scatter plot",
+  caption,
 } = Astro.props;
 
-const plot = { left: 70, top: 30, width: 610, height: 320 };
-const x = (value: number) => plot.left + (value / xMax) * plot.width;
-const y = (value: number) => plot.top + plot.height - (value / yMax) * plot.height;
+const plot = { left: 70, top: 28, width: 610, height: 320 };
+const xRange = xMax - xMin || 1;
+const yRange = yMax - yMin || 1;
+const x = (value: number) => plot.left + ((value - xMin) / xRange) * plot.width;
+const y = (value: number) => plot.top + plot.height - ((value - yMin) / yRange) * plot.height;
 const xTicks = 5;
 const yTicks = 5;
+const formatValue = (value: number, suffix: string) => `${value.toFixed(decimals)}${suffix}`;
 ---
 
-<div class="chart-surface chart-scatter">
+<figure class="chart-surface chart-scatter">
   {(title || subtitle || tag) && (
-    <div class="chart-heading">
+    <header class="chart-heading">
       <div>
         {title && <div class="chart-title">{title}</div>}
         {subtitle && <div class="chart-subtitle">{subtitle}</div>}
       </div>
       {tag && <span class="chart-tag">{tag}</span>}
-    </div>
+    </header>
   )}
 
   <div class="scatter-container">
     <svg viewBox="0 0 720 430" role="img" aria-label={ariaLabel}>
       <rect x={plot.left} y={plot.top} width={plot.width} height={plot.height} class="scatter-bg" />
 
-      <g class="grid">
+      <g class="grid" aria-hidden="true">
         {Array.from({ length: yTicks + 1 }, (_, i) => {
           const yy = plot.top + (i / yTicks) * plot.height;
           return <line x1={plot.left} y1={yy} x2={plot.left + plot.width} y2={yy} />;
@@ -62,19 +77,19 @@ const yTicks = 5;
         })}
       </g>
 
-      <g class="axis-labels">
+      <g class="axis-labels" aria-hidden="true">
         {Array.from({ length: xTicks + 1 }, (_, i) => {
-          const value = (xMax / xTicks) * i;
-          return <text x={plot.left + (i / xTicks) * plot.width} y="372">{value % 1 === 0 ? value : value.toFixed(1)}{i === xTicks ? "%" : ""}</text>;
+          const value = xMin + (xRange / xTicks) * i;
+          return <text x={plot.left + (i / xTicks) * plot.width} y="372">{value.toFixed(decimals)}{xSuffix}</text>;
         })}
         {Array.from({ length: yTicks + 1 }, (_, i) => {
-          const value = (yMax / yTicks) * (yTicks - i);
-          return <text x="45" y={plot.top + (i / yTicks) * plot.height + 4}>{value % 1 === 0 ? value : value.toFixed(1)}{i === 0 ? "%" : ""}</text>;
+          const value = yMin + (yRange / yTicks) * (yTicks - i);
+          return <text x="45" y={plot.top + (i / yTicks) * plot.height + 4}>{value.toFixed(decimals)}{ySuffix}</text>;
         })}
       </g>
 
       <text class="axis-title" x="375" y="408">{xLabel}</text>
-      <text class="axis-title" transform="translate(15 240) rotate(-90)">{yLabel}</text>
+      <text class="axis-title y-title" transform="translate(15 240) rotate(-90)">{yLabel}</text>
 
       <g class="points">
         {data.map((point) => (
@@ -83,16 +98,15 @@ const yTicks = 5;
             cy={y(point.y)}
             r="7"
             data-name={point.label}
-            data-x={point.x}
-            data-y={point.y}
+            data-x={formatValue(point.x, xSuffix)}
+            data-y={formatValue(point.y, ySuffix)}
             tabindex="0"
             role="img"
-            aria-label={`${point.label}: ${xLabel} ${point.x}%, ${yLabel} ${point.y}%`}
+            aria-label={`${point.label}: ${xLabel} ${formatValue(point.x, xSuffix)}, ${yLabel} ${formatValue(point.y, ySuffix)}`}
           />
         ))}
       </g>
     </svg>
-
     <div class="scatter-tip" hidden></div>
   </div>
 
@@ -100,89 +114,24 @@ const yTicks = 5;
     <span class="note-dot"></span>
     <span>Hover or focus a point to see its values.</span>
   </div>
-</div>
+  {caption && <figcaption class="chart-caption">{caption}</figcaption>}
+</figure>
 
 <style>
-  .scatter-container {
-    position: relative;
-    width: 100%;
-    overflow-x: auto;
-  }
-
-  svg {
-    display: block;
-    width: 100%;
-    min-width: 600px;
-    height: auto;
-  }
-
+  .scatter-container { position: relative; width: 100%; overflow-x: auto; }
+  svg { display: block; width: 100%; min-width: 600px; height: auto; }
   .scatter-bg { fill: transparent; }
-
-  .grid line {
-    stroke: var(--border);
-    stroke-width: 1;
-    opacity: .8;
-  }
-
-  .axis-labels text,
-  .axis-title {
-    fill: var(--muted);
-    font-size: 10px;
-  }
-
+  .grid line { stroke: var(--border); stroke-width: 1; opacity: .8; }
+  .axis-labels text, .axis-title { fill: var(--muted); font-size: 10px; }
   .axis-title { text-anchor: middle; }
-
-  .points circle {
-    fill: var(--chart-neutral);
-    stroke: var(--background);
-    stroke-width: 2.5;
-    cursor: pointer;
-    transition: fill 140ms ease, r 140ms ease;
-  }
-
-  .points circle:hover,
-  .points circle:focus {
-    fill: var(--chart-accent);
-    r: 8;
-    outline: none;
-  }
-
-  .points circle:focus-visible {
-    stroke: var(--chart-accent);
-  }
-
-  .scatter-tip {
-    position: fixed;
-    z-index: 50;
-    max-width: 210px;
-    padding: 8px 10px;
-    border: 1px solid rgba(255,255,255,.12);
-    border-radius: 5px;
-    background: rgba(24,24,24,.94);
-    color: #fff;
-    font-size: 11px;
-    line-height: 1.5;
-    pointer-events: none;
-  }
-
-  .scatter-note {
-    margin-top: 11px;
-    color: var(--muted);
-    font-size: 10px;
-  }
-
-  .note-dot {
-    display: inline-block;
-    width: 5px;
-    height: 5px;
-    margin-right: 7px;
-    border-radius: 50%;
-    background: var(--chart-accent);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .points circle { transition: none; }
-  }
+  .y-title { text-anchor: middle; }
+  .points circle { fill: var(--chart-neutral); stroke: var(--background); stroke-width: 2.5; cursor: pointer; transition: fill 140ms ease, r 140ms ease; }
+  .points circle:hover, .points circle:focus { fill: var(--chart-accent); r: 8; outline: none; }
+  .points circle:focus-visible { stroke: var(--chart-accent); }
+  .scatter-tip { position: fixed; z-index: 50; max-width: 220px; padding: 8px 10px; border: 1px solid var(--chart-tooltip-border); border-radius: 5px; background: var(--chart-tooltip-bg); color: var(--chart-tooltip-text); font-size: 11px; line-height: 1.5; pointer-events: none; }
+  .scatter-note { margin-top: 11px; color: var(--muted); font-size: 10px; }
+  .note-dot { display: inline-block; width: 5px; height: 5px; margin-right: 7px; border-radius: 50%; background: var(--chart-accent); }
+  @media (prefers-reduced-motion: reduce) { .points circle { transition: none; } }
 </style>
 
 <script>
@@ -191,23 +140,19 @@ const yTicks = 5;
     const points = chart.querySelectorAll<SVGCircleElement>(".points circle");
     if (!tip) return;
 
-    const showTip = (point: SVGCircleElement) => {
-      tip.hidden = false;
-      tip.innerHTML = `<strong>${point.dataset.name}</strong><br>${point.closest(".chart-scatter")?.querySelector(".axis-title")?.textContent ?? "X"}: ${point.dataset.x}%<br>${Array.from(chart.querySelectorAll(".axis-title"))[1]?.textContent ?? "Y"}: ${point.dataset.y}%`;
-
-      const rect = point.getBoundingClientRect();
-      const left = Math.min(window.innerWidth - 230, Math.max(10, rect.left + rect.width / 2 - 80));
-      const top = Math.max(10, rect.top - 76);
-      tip.style.left = `${left}px`;
-      tip.style.top = `${top}px`;
-    };
-
-    const hideTip = () => { tip.hidden = true; };
-
     points.forEach((point) => {
-      point.addEventListener("mouseenter", () => showTip(point));
+      const showTip = () => {
+        tip.hidden = false;
+        const name = point.dataset.name ?? "Point";
+        tip.innerHTML = `<strong>${name}</strong><br>${point.dataset.x}<br>${point.dataset.y}`;
+        const rect = point.getBoundingClientRect();
+        tip.style.left = `${Math.min(window.innerWidth - 230, Math.max(10, rect.left + rect.width / 2 - 80))}px`;
+        tip.style.top = `${Math.max(10, rect.top - 76)}px`;
+      };
+      const hideTip = () => { tip.hidden = true; };
+      point.addEventListener("mouseenter", showTip);
       point.addEventListener("mouseleave", hideTip);
-      point.addEventListener("focus", () => showTip(point));
+      point.addEventListener("focus", showTip);
       point.addEventListener("blur", hideTip);
     });
   });
