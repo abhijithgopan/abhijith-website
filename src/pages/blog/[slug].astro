@@ -1,13 +1,13 @@
 ---
 import { getCollection, render } from "astro:content";
-import "../../styles/global.css";
 import "../../styles/charts.css";
-import SiteHeader from "../../components/SiteHeader.astro";
-import ThemeInit from "../../components/ThemeInit.astro";
+import "../../styles/pages/blog.css";
+import BaseLayout from "../../layouts/BaseLayout.astro";
 import KeralaUrbanHealthCoverage from "../../components/KeralaUrbanHealthCoverage.astro";
 
-const posts = await getCollection("blog");
-
+const posts = (await getCollection("blog")).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
 const post = posts.find((entry) => entry.id === Astro.params.slug);
 
 if (!post) {
@@ -15,41 +15,57 @@ if (!post) {
 }
 
 const { Content } = await render(post);
-const InteractiveComponent = post.data.layout === "interactive" && post.id === "kerala-urban-health-coverage"
-  ? KeralaUrbanHealthCoverage
-  : null;
+const postIndex = posts.findIndex((entry) => entry.id === post.id);
+const newerPost = postIndex > 0 ? posts[postIndex - 1] : null;
+const olderPost = postIndex < posts.length - 1 ? posts[postIndex + 1] : null;
+
+const InteractiveComponent =
+  post.data.layout === "interactive" && post.id === "kerala-urban-health-coverage"
+    ? KeralaUrbanHealthCoverage
+    : null;
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
-    <ThemeInit />
-<title>{post.data.title} — Abhijith</title>
-    <meta name="description" content={post.data.description ?? `A blog post by Abhijith: ${post.data.title}`} />
-  </head>
+<BaseLayout
+  title={`${post.data.title} — Abhijith`}
+  description={post.data.description ?? `A blog post by Abhijith: ${post.data.title}`}
+  type="article"
+  publishedTime={post.data.date.toISOString()}
+  active="blog"
+>
+  <article class="post">
+    <header class="post-header">
+      <h1>{post.data.title}</h1>
+      <time datetime={post.data.date.toISOString()}>
+        {post.data.date.toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        })}
+      </time>
+    </header>
 
-  <body>
-    <main class="container">
-      <SiteHeader active="blog" />
+    <div class="post-content">
+      {InteractiveComponent ? <InteractiveComponent /> : <Content />}
+    </div>
+  </article>
 
-      <article class="post">
-        <header class="post-header">
-          <h1>{post.data.title}</h1>
-          <time datetime={post.data.date.toISOString()}>
-            {post.data.date.toLocaleDateString("en-GB", { day:"2-digit", month:"short", year:"numeric" })}
-          </time>
-        </header>
+  <footer class="post-footer">
+    <nav class="post-navigation" aria-label="Article navigation">
+      {newerPost ? (
+        <a class="post-nav-link" href={`/blog/${newerPost.id}`}>
+          <span class="post-nav-direction">Newer</span>
+          <span class="post-nav-title">{newerPost.data.title}</span>
+        </a>
+      ) : <span aria-hidden="true"></span>}
 
-        <div class="post-content">
-          {InteractiveComponent ? <InteractiveComponent /> : <Content />}
-        </div>
-      </article>
+      {olderPost ? (
+        <a class="post-nav-link next" href={`/blog/${olderPost.id}`}>
+          <span class="post-nav-direction">Older</span>
+          <span class="post-nav-title">{olderPost.data.title}</span>
+        </a>
+      ) : <span aria-hidden="true"></span>}
+    </nav>
 
-      <footer class="post-footer">
-        <a href="/blog">← Back to blog</a>
-      </footer>
-    </main>
-</body>
-</html>
+    <a class="post-back" href="/blog">← All writing</a>
+  </footer>
+</BaseLayout>

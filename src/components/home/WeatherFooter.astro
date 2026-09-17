@@ -1,0 +1,91 @@
+---
+---
+
+<footer class="weather-footer">
+  <img class="delhi-skyline" src="/delhi-skyline.svg" alt="" aria-hidden="true" />
+
+  <div class="weather-status">
+    <div class="weather-copy">
+      <p class="weather-location" id="my-location">Delhi</p>
+      <p class="weather-details" id="my-weather" aria-live="polite">Loading weather…</p>
+    </div>
+
+    <div class="weather-animation" aria-hidden="true">
+      <div class="weather-scene" id="weather-scene" data-weather="cloudy">
+        <div class="weather-sun"></div>
+        <div class="weather-cloud"></div>
+        <div class="weather-rain"></div>
+        <div class="weather-fog"></div>
+        <div class="weather-snow"></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="visitor-distance hidden" id="visitor-distance" aria-live="polite"></p>
+  <a href="/now">What I'm up to →</a>
+</footer>
+
+<script is:inline>
+  function formatTime(localTime) {
+    if (typeof localTime !== "string") return "";
+    const timePart = localTime.split("T")[1];
+    if (!timePart) return "";
+    const [hour, minute] = timePart.split(":");
+    const hourNumber = Number(hour);
+    if (!Number.isFinite(hourNumber)) return "";
+    const formattedHour = hourNumber % 12 || 12;
+    const period = hourNumber >= 12 ? "PM" : "AM";
+    return `${formattedHour}:${minute} ${period}`;
+  }
+
+  function getWeatherScene(code) {
+    if (typeof code !== "number") return "cloudy";
+    if (code === 0) return "clear";
+    if ([1, 2, 3].includes(code)) return "cloudy";
+    if ([45, 48].includes(code)) return "fog";
+    if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return "rain";
+    if ([71, 73, 75, 77, 85, 86].includes(code)) return "snow";
+    if ([95, 96, 99].includes(code)) return "storm";
+    return "cloudy";
+  }
+
+  const myWeather = document.querySelector("#my-weather");
+  const visitorDistance = document.querySelector("#visitor-distance");
+  const weatherScene = document.querySelector("#weather-scene");
+
+  async function loadVisitorInformation() {
+    try {
+      const response = await fetch("/api/visitor", { cache: "no-store" });
+      if (!response.ok) return;
+
+      const data = await response.json();
+      if (!data.available) return;
+
+      const myData = data.me;
+      if (myData && myWeather && weatherScene) {
+        const parts = [];
+        const time = formatTime(myData.localTime);
+        const temperature = myData.weather?.temperature;
+        const description = myData.weather?.description;
+
+        if (time) parts.push(time);
+        if (typeof temperature === "number") parts.push(`${Math.round(temperature)}°C`);
+        if (description) parts.push(description);
+
+        if (parts.length) myWeather.textContent = parts.join(" · ");
+        weatherScene.dataset.weather = getWeatherScene(myData.weather?.code);
+      }
+
+      const distance = data.visitor?.distance?.kilometers;
+      if (visitorDistance && typeof distance === "number") {
+        visitorDistance.textContent = `You're ~${distance.toLocaleString("en-IN")} km away from me.`;
+        visitorDistance.classList.remove("hidden");
+        visitorDistance.classList.add("visible");
+      }
+    } catch (error) {
+      console.error("Unable to load visitor information:", error);
+    }
+  }
+
+  loadVisitorInformation();
+</script>

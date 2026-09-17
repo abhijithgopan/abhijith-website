@@ -1,276 +1,132 @@
 import type { APIRoute } from "astro";
+import { createWeatherUrl, getWeatherDescription, HOME_LOCATION } from "../../lib/weather";
 
-const ABHIJITH = {
-  city: "Delhi",
-  latitude: 28.6139,
-  longitude: 77.2090,
+type CloudflareRequest = Request & {
+  cf?: {
+    city?: string | null;
+    country?: string | null;
+    latitude?: string | null;
+    longitude?: string | null;
+    region?: string | null;
+    timezone?: string | null;
+  };
 };
+
+function json(data: unknown, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "no-store",
+    },
+  });
+}
 
 function toRadians(value: number) {
   return (value * Math.PI) / 180;
 }
 
-function calculateDistance(
-  latitude: number,
-  longitude: number
-) {
+function calculateDistance(latitude: number, longitude: number) {
   const earthRadius = 6371;
-
-  const latitudeDifference =
-    toRadians(latitude - ABHIJITH.latitude);
-
-  const longitudeDifference =
-    toRadians(longitude - ABHIJITH.longitude);
+  const latitudeDifference = toRadians(latitude - HOME_LOCATION.latitude);
+  const longitudeDifference = toRadians(longitude - HOME_LOCATION.longitude);
 
   const a =
     Math.sin(latitudeDifference / 2) ** 2 +
-      Math.cos(toRadians(ABHIJITH.latitude)) *
-        Math.cos(toRadians(latitude)) *
-        Math.sin(longitudeDifference / 2) ** 2;
+    Math.cos(toRadians(HOME_LOCATION.latitude)) *
+      Math.cos(toRadians(latitude)) *
+      Math.sin(longitudeDifference / 2) ** 2;
 
-  const c =
-    2 * Math.atan2(
-      Math.sqrt(a),
-      Math.sqrt(1 - a)
-    );
-
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return earthRadius * c;
 }
 
-function getWeatherDescription(code: number) {
-  if (code === 0) return "Clear sky";
-  if ([1, 2, 3].includes(code)) return "Partly cloudy";
-  if ([45, 48].includes(code)) return "Fog";
-  if ([51, 53, 55].includes(code)) return "Drizzle";
-  if ([56, 57].includes(code)) return "Freezing drizzle";
-  if ([61, 63, 65].includes(code)) return "Rain";
-  if ([66, 67].includes(code)) return "Freezing rain";
-  if ([71, 73, 75, 77].includes(code)) return "Snow";
-  if ([80, 81, 82].includes(code)) return "Rain showers";
-  if ([85, 86].includes(code)) return "Snow showers";
-  if (code === 95) return "Thunderstorm";
-  if ([96, 99].includes(code)) {
-    return "Thunderstorm with hail";
-  }
+function normaliseWeather(current: Record<string, unknown> | undefined) {
+  const code = current?.weather_code;
+  const numericCode = typeof code === "number" ? code : null;
 
-  return "Unknown";
+  return {
+    temperature: typeof current?.temperature_2m === "number" ? current.temperature_2m : null,
+    feelsLike: typeof current?.apparent_temperature === "number" ? current.apparent_temperature : null,
+    code: numericCode,
+    description: numericCode === null ? null : getWeatherDescription(numericCode),
+  };
 }
 
 export const GET: APIRoute = async ({ request }) => {
-  const cf = (
-    request as Request & {
-      cf?: {
-        city?: string | null;
-        country?: string | null;
-        latitude?: string | null;
-        longitude?: string | null;
-        region?: string | null;
-        timezone?: string | null;
-      };
-    }
-  ).cf;
+  const cf = (request as CloudflareRequest).cf;
 
-  if (!cf?.latitude || !cf?.longitude) {
-    return new Response(
-      JSON.stringify({
-        available: false,
-        message: "Visitor location is not available.",
-      }),
-      {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          "Cache-Control": "no-store",
-        },
-      }
-    );
+  const latitude = Number(cf?.latitude);
+  const longitude = Number(cf?.longitude);
+
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    return json({
+      available: false,
+      message: "Visitor location is not available.",
+    });
   }
 
-  const latitude = Number(cf.latitude);
-  const longitude = Number(cf.longitude);
-
-  if (
-    !Number.isFinite(latitude) ||
-    !Number.isFinite(longitude)
-  ) {
-    return new Response(
-      JSON.stringify({
-        available: false,
-        message: "Visitor coordinates are invalid.",
-      }),
-      {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          "Cache-Control": "no-store",
-        },
-      }
-    );
-  }
-
-  const distance = calculateDistance(
-    latitude,
-    longitude
-  );
-
-  const visitorWeatherUrl =
-    "https://api.open-meteo.com/v1/forecast" +
-    `?latitude=${latitude}` +
-    `&longitude=${longitude}` +
-    "&current=temperature_2m,apparent_temperature,weather_code" +
-    "&temperature_unit=celsius" +
-    "&timezone=auto";
-
-  const delhiWeatherUrl =
-    "https://api.open-meteo.com/v1/forecast" +
-    `?latitude=${ABHIJITH.latitude}` +
-    `&longitude=${ABHIJITH.longitude}` +
-    "&current=temperature_2m,apparent_temperature,weather_code" +
-    "&temperature_unit=celsius" +
-    "&timezone=Asia%2FKolkata";
+  const distance = calculateDistance(latitude, longitude);
 
   try {
-    const [
-      visitorWeatherResponse,
-      delhiWeatherResponse,
-    ] = await Promise.all([
-      fetch(visitorWeatherUrl),
-      fetch(delhiWeatherUrl),
+    const [visitorResponse, homeResponse] = await Promise.all([
+      fetch(createWeatherUrl(latitude, longitude), {
+        cf: { cacheTtl: 300, cacheEverything: true },
+        signal: AbortSignal.timeout(4000),
+      } as RequestInit),
+      fetch(createWeatherUrl(HOME_LOCATION.latitude, HOME_LOCATION.longitude, HOME_LOCATION.timezone), {
+        cf: { cacheTtl: 300, cacheEverything: true },
+        signal: AbortSignal.timeout(4000),
+      } as RequestInit),
     ]);
 
-    if (
-      !visitorWeatherResponse.ok ||
-      !delhiWeatherResponse.ok
-    ) {
+    if (!visitorResponse.ok || !homeResponse.ok) {
       throw new Error("Weather request failed.");
     }
 
-    const visitorWeather =
-      await visitorWeatherResponse.json();
+    const [visitorWeather, homeWeather] = await Promise.all([
+      visitorResponse.json(),
+      homeResponse.json(),
+    ]);
 
-    const delhiWeather =
-      await delhiWeatherResponse.json();
-
-    const visitorWeatherCode =
-      visitorWeather.current?.weather_code;
-
-    const delhiWeatherCode =
-      delhiWeather.current?.weather_code;
-
-    return new Response(
-      JSON.stringify({
-        available: true,
-
-        visitor: {
-          city: cf.city ?? null,
-          region: cf.region ?? null,
-          country: cf.country ?? null,
-          latitude,
-          longitude,
-          timezone: cf.timezone ?? null,
-
-          distance: {
-            kilometers: Math.round(distance),
-          },
-
-          weather: {
-            temperature:
-              visitorWeather.current?.temperature_2m ??
-              null,
-            feelsLike:
-              visitorWeather.current?.apparent_temperature ??
-              null,
-            code:
-              typeof visitorWeatherCode === "number"
-                ? visitorWeatherCode
-                : null,
-            description:
-              typeof visitorWeatherCode === "number"
-                ? getWeatherDescription(
-                    visitorWeatherCode
-                  )
-                : null,
-          },
-
-          localTime:
-            visitorWeather.current?.time ?? null,
-        },
-
-        me: {
-          city: ABHIJITH.city,
-          timezone: "Asia/Kolkata",
-
-          weather: {
-            temperature:
-              delhiWeather.current?.temperature_2m ??
-              null,
-            feelsLike:
-              delhiWeather.current?.apparent_temperature ??
-              null,
-            code:
-              typeof delhiWeatherCode === "number"
-                ? delhiWeatherCode
-                : null,
-            description:
-              typeof delhiWeatherCode === "number"
-                ? getWeatherDescription(
-                    delhiWeatherCode
-                  )
-                : null,
-          },
-
-          localTime:
-            delhiWeather.current?.time ?? null,
-        },
-      }),
-      {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          "Cache-Control": "no-store",
-        },
-      }
-    );
+    return json({
+      available: true,
+      visitor: {
+        city: cf?.city ?? null,
+        region: cf?.region ?? null,
+        country: cf?.country ?? null,
+        timezone: cf?.timezone ?? null,
+        distance: { kilometers: Math.round(distance) },
+        weather: normaliseWeather(visitorWeather.current),
+        localTime: visitorWeather.current?.time ?? null,
+      },
+      me: {
+        city: HOME_LOCATION.city,
+        timezone: HOME_LOCATION.timezone,
+        weather: normaliseWeather(homeWeather.current),
+        localTime: homeWeather.current?.time ?? null,
+      },
+    });
   } catch (error) {
-    console.error(
-      "Weather request failed:",
-      error
-    );
+    console.error("Weather request failed:", error);
 
-    return new Response(
-      JSON.stringify({
-        available: true,
-
-        visitor: {
-          city: cf.city ?? null,
-          region: cf.region ?? null,
-          country: cf.country ?? null,
-          latitude,
-          longitude,
-          timezone: cf.timezone ?? null,
-
-          distance: {
-            kilometers: Math.round(distance),
-          },
-
-          weather: null,
-          localTime: null,
-        },
-
-        me: {
-          city: ABHIJITH.city,
-          timezone: "Asia/Kolkata",
-          weather: null,
-          localTime: null,
-        },
-      }),
-      {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          "Cache-Control": "no-store",
-        },
-      }
-    );
+    return json({
+      available: true,
+      visitor: {
+        city: cf?.city ?? null,
+        region: cf?.region ?? null,
+        country: cf?.country ?? null,
+        timezone: cf?.timezone ?? null,
+        distance: { kilometers: Math.round(distance) },
+        weather: null,
+        localTime: null,
+      },
+      me: {
+        city: HOME_LOCATION.city,
+        timezone: HOME_LOCATION.timezone,
+        weather: null,
+        localTime: null,
+      },
+    });
   }
 };

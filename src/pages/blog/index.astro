@@ -1,8 +1,7 @@
 ---
 import { getCollection } from "astro:content";
-import "../../styles/global.css";
-import SiteHeader from "../../components/SiteHeader.astro";
-import ThemeInit from "../../components/ThemeInit.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import "../../styles/pages/blog.css";
 
 const posts = await getCollection("blog");
 
@@ -31,52 +30,7 @@ const years = Object.keys(postsByYear).sort(
 );
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-
-    <meta charset="UTF-8" />
-
-    <meta
-      name="viewport"
-      content="width=device-width"
-    />
-    <ThemeInit />
-<title>Blog — Abhijith</title>
-
-    <meta
-      name="description"
-      content="Blog posts by Abhijith."
-    />
-
-    <style>
-/* ====================
-         Blog Footer
-      ==================== */
-
-      .blog-footer {
-        margin-top: 52px;
-      }
-
-
-      @media (max-width: 600px) {
-
-        .blog-footer {
-          margin-top: 48px;
-        }
-
-      }
-    </style>
-
-  </head>
-
-
-  <body>
-
-    <main class="container">
-
-
-      <SiteHeader active="blog" />
+<BaseLayout title="Blog — Abhijith" description="Blog posts by Abhijith." active="blog">
 
 
       <section class="blog-page">
@@ -117,18 +71,11 @@ const years = Object.keys(postsByYear).sort(
                         </span>
 
 
-                        <time>
-
-                          {String(
-                            post.data.date.getDate()
-                          ).padStart(2, "0")}
-
-                          /
-
-                          {String(
-                            post.data.date.getMonth() + 1
-                          ).padStart(2, "0")}
-
+                        <time datetime={post.data.date.toISOString()}>
+                          {post.data.date.toLocaleDateString("en-GB", {
+                            day: "2-digit",
+                            month: "short",
+                          })}
                         </time>
 
                       </a>
@@ -159,6 +106,4 @@ const years = Object.keys(postsByYear).sort(
       </footer>
 
 
-    </main>
-</body>
-</html>
+</BaseLayout>

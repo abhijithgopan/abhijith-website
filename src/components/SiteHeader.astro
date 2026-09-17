@@ -9,13 +9,13 @@ const { active } = Astro.props;
 <header class="site-header">
   <a href="/" class="site-brand">
     <span class="profile-pic">
-      <img src="/profile.png" alt="Abhijith" />
+      <img src="/profile.png" alt="Abhijith" width="32" height="32" loading="eager" decoding="async" fetchpriority="high" />
     </span>
     <span class="site-title">Abhijith</span>
   </a>
 
   <div class="header-right">
-    <nav>
+    <nav aria-label="Primary navigation">
       <a href="/" class:list={{ active: active === "home" }} aria-current={active === "home" ? "page" : undefined}>home</a>
       <a href="/blog" class:list={{ active: active === "blog" }} aria-current={active === "blog" ? "page" : undefined}>blog</a>
       <a href="/photos" class:list={{ active: active === "photos" }} aria-current={active === "photos" ? "page" : undefined}>photos</a>
@@ -26,6 +26,7 @@ const { active } = Astro.props;
       class="theme-toggle"
       type="button"
       aria-label="Switch to dark mode"
+      aria-pressed="false"
       title="Switch to dark mode"
     >
       <svg class="theme-icon-moon" viewBox="0 0 24 24" aria-hidden="true">
@@ -54,6 +55,7 @@ const { active } = Astro.props;
     const isDark = document.documentElement.dataset.theme === "dark";
     themeButton?.setAttribute("aria-label", isDark ? "Switch to light mode" : "Switch to dark mode");
     themeButton?.setAttribute("title", isDark ? "Switch to light mode" : "Switch to dark mode");
+    themeButton?.setAttribute("aria-pressed", String(isDark));
   }
 
   themeButton?.addEventListener("click", () => {

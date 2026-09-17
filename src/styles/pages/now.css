@@ -1,0 +1,142 @@
+/* ==================================================
+   Now page
+================================================== */
+
+.now-page {
+  margin: 0;
+}
+
+.now-header {
+  margin-bottom: 62px;
+}
+
+.now-page h1 {
+  margin: 0 0 28px;
+  color: var(--text);
+  font-size: 25px;
+  line-height: 1.28;
+  font-weight: 400;
+  letter-spacing: -0.014em;
+}
+
+.now-intro {
+  max-width: 650px;
+  margin: 0;
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.78;
+  font-weight: 400;
+  letter-spacing: -0.004em;
+}
+
+.now-sections {
+  border-top: 1px solid var(--border);
+}
+
+.now-section {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 28px;
+  padding: 24px 0 26px;
+  border-bottom: 1px solid var(--border);
+}
+
+.now-section-label {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.55;
+  font-weight: 400;
+  letter-spacing: -0.004em;
+}
+
+.now-section-content {
+  min-width: 0;
+}
+
+.now-section-content p {
+  max-width: 500px;
+  margin: 0;
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.78;
+  font-weight: 400;
+  letter-spacing: -0.004em;
+}
+
+.now-meta {
+  display: flex;
+  gap: 8px;
+  margin-top: 34px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.now-meta time {
+  color: var(--muted);
+}
+
+.now-footer {
+  margin-top: 54px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.now-footer a {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+
+.now-footer a:hover {
+  color: var(--text);
+}
+
+@media (max-width: 600px) {
+  .now-header {
+    margin-bottom: 52px;
+  }
+
+  .now-page h1 {
+    margin-bottom: 24px;
+    font-size: 23px;
+    line-height: 1.32;
+  }
+
+  .now-section {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 20px 0 22px;
+  }
+
+  .now-section-label {
+    font-size: 13px;
+  }
+
+  .now-section-content p {
+    line-height: 1.78;
+  }
+
+  .now-meta {
+    margin-top: 28px;
+  }
+
+  .now-footer {
+    margin-top: 48px;
+    padding-top: 16px;
+  }
+}
+
+@media (max-width: 360px) {
+  .now-page h1 {
+    font-size: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .now-footer a {
+    transition: none;
+  }
+}

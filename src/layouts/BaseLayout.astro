@@ -1,0 +1,101 @@
+---
+import "../styles/global.css";
+import "../styles/design-system.css";
+import "../styles/accessibility.css";
+import SiteHeader from "../components/SiteHeader.astro";
+import ThemeInit from "../components/ThemeInit.astro";
+
+interface Props {
+  title: string;
+  description?: string;
+  active?: "home" | "blog" | "photos" | "now";
+  robots?: string;
+  type?: "website" | "article";
+  publishedTime?: string;
+  image?: string;
+}
+
+const {
+  title,
+  description,
+  active,
+  robots = "index, follow",
+  type = "website",
+  publishedTime,
+  image = "/profile.png",
+} = Astro.props;
+
+const canonicalUrl = new URL(Astro.url.pathname, Astro.url.origin).href;
+const imageUrl = new URL(image, Astro.url.origin).href;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)" />
+    <meta name="robots" content={robots} />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="alternate" type="application/rss+xml" title="Abhijith — Writing" href="/rss.xml" />
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+
+    <link rel="preconnect" href="https://rsms.me" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <ThemeInit />
+
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+
+    <meta property="og:type" content={type} />
+    <meta property="og:title" content={title} />
+    {description && <meta property="og:description" content={description} />}
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={imageUrl} />
+    <meta property="og:image:alt" content="Abhijith" />
+    <meta property="og:site_name" content="Abhijith" />
+    {publishedTime && <meta property="article:published_time" content={publishedTime} />}
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    {description && <meta name="twitter:description" content={description} />}
+    <meta name="twitter:image" content={imageUrl} />
+
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": type === "article" ? "Article" : "WebPage",
+      name: title,
+      headline: type === "article" ? title : undefined,
+      description,
+      url: canonicalUrl,
+      image: imageUrl,
+      ...(type === "article" && publishedTime
+        ? { datePublished: publishedTime }
+        : {}),
+      ...(type === "article"
+        ? {
+            author: {
+              "@type": "Person",
+              name: "Abhijith",
+              url: Astro.url.origin,
+            },
+          }
+        : {}),
+    })} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <div class="container">
+      <SiteHeader active={active} />
+      <main id="main-content" tabindex="-1">
+        <slot />
+      </main>
+    </div>
+  </body>
+</html>

@@ -1,176 +1,57 @@
 ---
-import "../styles/global.css";
-import SiteHeader from "../components/SiteHeader.astro";
-import ThemeInit from "../components/ThemeInit.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import "../styles/pages/now.css";
 ---
 
-<!doctype html>
-<html lang="en">
-
-<head>
-
-  <meta charset="UTF-8" />
-
-  <meta
-    name="viewport"
-    content="width=device-width"
-  />
-    <ThemeInit />
-<title>Now — Abhijith</title>
-
-  <meta
-    name="description"
-    content="What Abhijith is currently working on, learning, and interested in."
-  />
-
-  <style>
-/* ==================================================
-       Now page
-    ================================================== */
-
-    .now-page .now-intro {
-      margin-bottom: 46px;
-    }
-
-
-    .now-section {
-      padding: 22px 0 24px;
-
-      border-top: 1px solid var(--border);
-    }
-
-
-    .now-section:first-of-type {
-      border-top: 1px solid var(--border);
-    }
-
-
-    .now-section h2 {
-      margin: 0 0 12px;
-
-      color: var(--muted);
-
-      font-size: 15px;
-      line-height: 1.5;
-      font-weight: 400;
-
-      letter-spacing: -0.006em;
-    }
-
-
-    .now-section p {
-      margin: 0;
-
-      color: var(--text);
-
-      font-size: 15px;
-      line-height: 1.75;
-      font-weight: 400;
-
-      letter-spacing: -0.004em;
-    }
-
-
-    .now-page .updated {
-      margin-top: 34px;
-    }
-
-
-    /* ==================================================
-       Mobile
-    ================================================== */
-</style>
-
-</head>
-
-
-<body>
-
-  <main class="container">
-
-
-    <!-- ==================================================
-         Header
-    ================================================== -->
-
-    <SiteHeader active="now" />
-
-
-    <!-- ==================================================
-         Now
-    ================================================== -->
-
-    <article class="now-page">
-
-      <h1>
-        Now
-      </h1>
-
-
+<BaseLayout
+  title="Now — Abhijith"
+  description="What Abhijith is currently working on, learning, and interested in."
+  active="now"
+>
+  <article class="now-page">
+    <header class="now-header">
+      <h1>Now</h1>
       <p class="now-intro">
-        This is what I'm currently working on, learning, watching, and
-        thinking about.
+        This is what I'm currently working on, learning, watching, and thinking about.
       </p>
+    </header>
 
-
+    <div class="now-sections">
       <section class="now-section">
-
-        <h2>
-          Working on
-        </h2>
-
-        <p>
-          Building this little corner of the internet and figuring out how I
-          want it to look and feel.
-        </p>
-
+        <div class="now-section-label">Working on</div>
+        <div class="now-section-content">
+          <p>
+            Building this little corner of the internet and figuring out how I want it to look and feel.
+          </p>
+        </div>
       </section>
 
-
       <section class="now-section">
-
-        <h2>
-          Learning
-        </h2>
-
-        <p>
-          Exploring web development, data, and whatever else catches my
-          attention.
-        </p>
-
+        <div class="now-section-label">Learning</div>
+        <div class="now-section-content">
+          <p>
+            Exploring web development, data, and whatever else catches my attention.
+          </p>
+        </div>
       </section>
 
-
       <section class="now-section">
-
-        <h2>
-          Watching
-        </h2>
-
-        <p>
-          Movies, as usual. I'm also keeping track of what I watch on
-          Letterboxd.
-        </p>
-
+        <div class="now-section-label">Watching</div>
+        <div class="now-section-content">
+          <p>
+            Movies, as usual. I'm also keeping track of what I watch on Letterboxd.
+          </p>
+        </div>
       </section>
+    </div>
 
-
-      <p class="updated">
-        Last updated: September 2026
-      </p>
-
-    </article>
-
-
-    <footer>
-
-      <a href="/">
-        ← Home
-      </a>
-
+    <footer class="now-meta">
+      <span>Last updated</span>
+      <time datetime="2026-09">September 2026</time>
     </footer>
+  </article>
 
-  </main>
-</body>
-
-</html>
+  <footer class="now-footer">
+    <a href="/">← Home</a>
+  </footer>
+</BaseLayout>

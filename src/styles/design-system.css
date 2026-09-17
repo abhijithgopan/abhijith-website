@@ -1,0 +1,488 @@
+/* ==================================================
+   Site design system
+   Shared visual rules for the whole website.
+================================================== */
+
+:root {
+  --content-width: 710px;
+  --page-gutter: 40px;
+  --page-top: 62px;
+  --page-bottom: 70px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 72px;
+
+  --accent: #00a9c7;
+  --focus-ring: rgba(0, 169, 199, 0.55);
+
+  --text-soft: color-mix(in srgb, var(--text) 72%, var(--background));
+  --surface-hover: color-mix(in srgb, var(--text) 3%, var(--background));
+}
+
+/* Keep the page narrow and quiet, with predictable rhythm. */
+.container {
+  max-width: var(--content-width);
+  padding: var(--page-top) var(--page-gutter) var(--page-bottom);
+}
+
+/* A slightly calmer global text measure. */
+.intro p,
+.post-content,
+.now-page {
+  text-wrap: pretty;
+}
+
+/* Keyboard focus should be visible without looking like a browser default. */
+a:focus-visible,
+button:focus-visible {
+  outline: 1px solid var(--focus-ring);
+  outline-offset: 4px;
+}
+
+::selection {
+  color: var(--background);
+  background: var(--accent);
+}
+
+/* Keep media from creating accidental horizontal overflow. */
+img,
+svg {
+  max-width: 100%;
+}
+
+/* Shared footer links stay quiet until interacted with. */
+footer a {
+  text-underline-offset: 3px;
+}
+
+/* Header refinement */
+.site-header {
+  margin-bottom: var(--space-9);
+}
+
+.site-brand {
+  gap: 9px;
+}
+
+.site-title {
+  font-size: 19px;
+  letter-spacing: -0.015em;
+}
+
+nav {
+  gap: 16px;
+}
+
+nav a {
+  transition: color 160ms ease, opacity 160ms ease;
+}
+
+nav a:not(.active):hover {
+  color: var(--text-soft);
+}
+
+/* The theme control is deliberately understated. */
+.theme-toggle {
+  border-radius: 50%;
+}
+
+.theme-toggle:hover {
+  transform: rotate(8deg);
+}
+
+/* Homepage rhythm */
+.intro {
+  margin-bottom: var(--space-9);
+}
+
+.intro p {
+  max-width: 650px;
+  line-height: 1.78;
+}
+
+.writing > h2,
+.recent-movies-heading h2,
+.now-section h2 {
+  color: var(--muted);
+}
+
+.year-group {
+  grid-template-columns: 92px minmax(0, 1fr);
+}
+
+.writing-post {
+  padding: 16px 8px 16px 0;
+  border-bottom-color: color-mix(in srgb, var(--border) 90%, transparent);
+}
+
+.writing-post:hover {
+  background: var(--surface-hover);
+  transform: translateX(2px);
+}
+
+/* Blog/article rhythm */
+.post-header {
+  margin-bottom: 52px;
+}
+
+.post-header h1 {
+  font-size: 25px;
+  line-height: 1.28;
+}
+
+.post-content {
+  line-height: 1.78;
+}
+
+.post-content p {
+  margin-bottom: 30px;
+}
+
+.post-content h2 {
+  margin-top: 56px;
+}
+
+.post-content h3 {
+  margin-top: 44px;
+}
+
+/* A consistent quiet divider for page footers. */
+.blog-footer,
+.now-page + footer {
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+/* Small screens: preserve the generous feel without wasting width. */
+@media (max-width: 600px) {
+  :root {
+    --page-gutter: 24px;
+    --page-top: 38px;
+    --page-bottom: 52px;
+  }
+
+  .site-header {
+    margin-bottom: 58px;
+  }
+
+  .site-title {
+    font-size: 17px;
+  }
+
+  nav {
+    gap: 10px;
+  }
+
+  nav a {
+    font-size: 13px;
+  }
+
+  .header-right {
+    gap: 8px;
+  }
+
+  .intro {
+    margin-bottom: 54px;
+  }
+
+  .intro p {
+    line-height: 1.78;
+  }
+
+  .year-group {
+    grid-template-columns: 58px minmax(0, 1fr);
+  }
+
+  .writing-post {
+    padding: 14px 4px 14px 0;
+  }
+
+  .post-header {
+    margin-bottom: 38px;
+  }
+
+  .post-header h1 {
+    font-size: 23px;
+    line-height: 1.32;
+  }
+
+  .post-content {
+    line-height: 1.78;
+  }
+
+  .blog-footer,
+  .now-page + footer {
+    padding-top: 16px;
+  }
+}
+
+@media (max-width: 360px) {
+  :root {
+    --page-gutter: 20px;
+  }
+
+  nav {
+    gap: 7px;
+  }
+
+  nav a {
+    font-size: 12px;
+  }
+
+  .header-right {
+    gap: 5px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+
+  .theme-toggle,
+  nav a,
+  .writing-post {
+    transition: none !important;
+  }
+}
+
+/* ==================================================
+   V2 visual refinement — shared rhythm
+================================================== */
+
+:root {
+  --content-width: 720px;
+  --page-top: 64px;
+  --page-bottom: 76px;
+  --section-gap: 76px;
+}
+
+.container {
+  max-width: var(--content-width);
+}
+
+.site-header {
+  margin-bottom: 74px;
+}
+
+.site-brand,
+nav a,
+.theme-toggle {
+  -webkit-tap-highlight-color: transparent;
+}
+
+nav a {
+  position: relative;
+}
+
+nav a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 1px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  opacity: 0;
+  transition: transform 180ms ease, opacity 180ms ease;
+}
+
+nav a:hover::after,
+nav a.active::after {
+  transform: scaleX(1);
+  opacity: 0.72;
+}
+
+nav a.active {
+  color: var(--text);
+}
+
+@media (max-width: 600px) {
+  :root {
+    --page-top: 38px;
+    --page-bottom: 56px;
+  }
+
+  .site-header {
+    margin-bottom: 62px;
+  }
+}
+
+@media (max-width: 380px) {
+  nav a::after {
+    bottom: -5px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  nav a::after {
+    transition: none;
+  }
+}
+
+/* ==================================================
+   V7 — dark mode + micro-interactions
+================================================== */
+
+:root {
+  --theme-transition: 220ms ease;
+  --accent-soft: color-mix(in srgb, var(--accent) 12%, transparent);
+  --border-soft: color-mix(in srgb, var(--border) 82%, transparent);
+}
+
+html,
+body,
+.site-title,
+nav a,
+.theme-toggle,
+.writing-post,
+.writing > h2,
+.recent-movies-heading h2,
+.now-section h2,
+.year-label,
+.writing-post time,
+.post-header time,
+.post-content,
+.now-section-label,
+.now-meta,
+.photo-viewer-meta,
+.photo-viewer-counter {
+  transition-property: color, background-color, border-color, fill, stroke;
+  transition-duration: var(--theme-transition);
+  transition-timing-function: ease;
+}
+
+/* Keep theme changes calm instead of fading the entire page. */
+html {
+  color-scheme: light;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/* Theme button: a small physical-feeling press, without bounce. */
+.theme-toggle {
+  position: relative;
+  overflow: visible;
+  transition: color 160ms ease, transform 160ms ease;
+}
+
+.theme-toggle:hover {
+  transform: rotate(8deg) scale(1.04);
+}
+
+.theme-toggle:active {
+  transform: rotate(0deg) scale(0.92);
+}
+
+.theme-toggle svg {
+  transition: transform 220ms ease, opacity 160ms ease;
+}
+
+html[data-theme="dark"] .theme-toggle .theme-icon-sun {
+  transform: rotate(18deg);
+}
+
+/* Links: use the site's cyan as an accent rather than changing their weight. */
+a {
+  text-underline-offset: 4px;
+}
+
+nav a::after {
+  background: var(--accent);
+}
+
+nav a:hover {
+  color: var(--text);
+}
+
+/* Writing rows get a tiny amount of depth only while interacting. */
+.writing-post {
+  position: relative;
+  transition:
+    color 160ms ease,
+    background-color 160ms ease,
+    transform 160ms ease,
+    border-color 220ms ease;
+}
+
+
+/* Article links reveal the accent without changing the text colour. */
+.post-content a {
+  text-decoration-color: color-mix(in srgb, var(--text) 40%, transparent);
+  transition: text-decoration-color 160ms ease;
+}
+
+.post-content a:hover {
+  text-decoration-color: var(--accent);
+}
+
+/* Quiet image lift for article photography and the gallery. */
+.post-content img {
+  transition: opacity 180ms ease, transform 240ms ease;
+}
+
+.post-content figure:hover img {
+  transform: translateY(-1px);
+}
+
+/* Footer links and small navigation affordances. */
+.blog-footer a,
+.now-footer a,
+.post-back,
+.post-nav-title {
+  transition: color 160ms ease, text-decoration-color 160ms ease;
+}
+
+.blog-footer a:hover,
+.now-footer a:hover,
+.post-back:hover {
+  color: var(--accent);
+}
+
+.post-nav-link:hover .post-nav-title {
+  text-decoration-color: var(--accent);
+}
+
+/* Weather illustration remains restrained in dark mode. */
+html[data-theme="dark"] .delhi-skyline {
+  opacity: 0.28;
+}
+
+/* Respect reduced-motion preferences across all V7 additions. */
+@media (prefers-reduced-motion: reduce) {
+  html,
+  body,
+  .site-title,
+  nav a,
+  .theme-toggle,
+  .theme-toggle svg,
+  .writing-post,
+  .post-content img,
+  .post-content a,
+  .blog-footer a,
+  .now-footer a,
+  .post-back,
+  .post-nav-title {
+    transition: none !important;
+  }
+
+  .theme-toggle:hover,
+  .theme-toggle:active,
+  .writing-post:hover,
+  .post-content figure:hover img {
+    transform: none;
+  }
+}

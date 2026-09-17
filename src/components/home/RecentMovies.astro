@@ -1,0 +1,64 @@
+---
+interface Movie {
+  title: string;
+  rating: number;
+  date: string;
+  link: string;
+  poster: string;
+}
+
+interface Props {
+  movies: Movie[];
+  ratingStars: (rating: number) => string;
+  formatMovieDate: (date: string) => string;
+}
+
+const { movies, ratingStars, formatMovieDate } = Astro.props;
+---
+
+<section class="recent-movies">
+  <div class="recent-movies-heading">
+    <h2 class="recently-watched-title">
+      <span class="movie-popcorn" aria-hidden="true">
+        <span class="popcorn-kernel popcorn-kernel-1"></span>
+        <span class="popcorn-kernel popcorn-kernel-2"></span>
+        <span class="popcorn-kernel popcorn-kernel-3"></span>
+        <svg class="popcorn-bucket" viewBox="0 0 28 24" focusable="false">
+          <path d="M4 6h20l-2 16H6L4 6Z" fill="#fffdf7" />
+          <path d="M3.5 6h21" />
+          <path d="M8 7l2 14" />
+          <path d="M13.5 7v14" />
+          <path d="M19 7l-2 14" />
+          <path d="M6.5 7l2 14" stroke="#e53935" />
+          <path d="M16.5 7l-2 14" stroke="#e53935" />
+        </svg>
+      </span>
+      <span>Recently watched</span>
+    </h2>
+
+    <a href="https://letterboxd.com/abhijithgopan/" target="_blank" rel="noreferrer">
+      Letterboxd →
+    </a>
+  </div>
+
+  <div class="movie-strip">
+    {movies.map((movie) => (
+      <a class="movie-card" href={movie.link} target="_blank" rel="noreferrer">
+        <div class="movie-poster-wrap">
+          {movie.poster ? (
+            <img src={movie.poster} alt={`${movie.title} poster`} class="movie-poster" loading="lazy" />
+          ) : (
+            <div class="movie-poster-placeholder" aria-hidden="true">{movie.title}</div>
+          )}
+        </div>
+        <div class="movie-title">{movie.title}</div>
+        <div class="movie-meta">
+          <span class="movie-rating" aria-label={`${movie.rating} out of 5 stars`}>
+            {ratingStars(movie.rating)}
+          </span>
+          <span class="movie-date">{formatMovieDate(movie.date)}</span>
+        </div>
+      </a>
+    ))}
+  </div>
+</section>
