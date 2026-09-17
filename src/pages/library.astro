@@ -1,0 +1,25 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { library } from "../data/library";
+import BookCover from "../components/home/BookCover.astro";
+import "../styles/pages/library.css";
+---
+
+<BaseLayout title="Library — Abhijith" description="Books Abhijith has read or is reading.">
+  <section class="library-page">
+    <header class="library-page-header">
+      <h1>Library</h1>
+      <p>Books I've read, or am reading.</p>
+    </header>
+
+    <div class="library-page-shelf" role="list" aria-label="Books in my library">
+      {library.map((book) => (
+        <a class="library-page-book" href={book.source} target="_blank" rel="noreferrer" role="listitem">
+          <BookCover book={book} class="library-page-book-cover" />
+          <span class="library-page-book-title">{book.title}</span>
+          <span class="library-page-book-author">{book.author}</span>
+        </a>
+      ))}
+    </div>
+  </section>
+</BaseLayout>

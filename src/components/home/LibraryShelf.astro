@@ -1,0 +1,36 @@
+---
+import { library } from "../../data/library";
+import BookCover from "./BookCover.astro";
+
+const currentlyReading = library.filter((book) => book.status === "reading");
+const otherBooks = library.filter((book) => book.status !== "reading");
+const homepageBooks = [...currentlyReading, ...otherBooks].slice(0, 5);
+---
+
+<section class="library-shelf" aria-labelledby="library-heading">
+  <div class="library-intro">
+    <h2 id="library-heading" class="library-heading">Library</h2>
+    <p>Books I've read, or am reading.<br />A small collection, always growing.</p>
+    <a class="library-link" href="/library">See all books <span aria-hidden="true">→</span></a>
+  </div>
+
+  <div class="shelf-wrap">
+    <div class="bookshelf" role="list" aria-label="Books in my library">
+      {homepageBooks.map((book, index) => (
+        <a
+          class:list={["shelf-book", `shelf-book-${index + 1}`]}
+          href={book.source}
+          target="_blank"
+          rel="noreferrer"
+          role="listitem"
+          aria-label={`${book.title} by ${book.author}`}
+          title={`${book.title} — ${book.author}`}
+        >
+          <BookCover book={book} loading={index === 0 ? "eager" : "lazy"} class="book-face" />
+          <span class="book-edge" aria-hidden="true"></span>
+        </a>
+      ))}
+    </div>
+    <div class="shelf-board" aria-hidden="true"></div>
+  </div>
+</section>

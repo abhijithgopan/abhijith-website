@@ -3,6 +3,7 @@ import { getCollection } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import RecentMovies from "../components/home/RecentMovies.astro";
 import WeatherFooter from "../components/home/WeatherFooter.astro";
+import LibraryShelf from "../components/home/LibraryShelf.astro";
 import { formatMovieDate, getRecentMovies, ratingStars } from "../lib/letterboxd";
 import "../styles/pages/home.css";
 
@@ -144,6 +145,8 @@ const recentMovies = await getRecentMovies(4);
 
 
       <RecentMovies movies={recentMovies} ratingStars={ratingStars} formatMovieDate={formatMovieDate} />
+
+      <LibraryShelf />
 
       <WeatherFooter />
 

@@ -134,3 +134,7 @@ The gallery uses a strict 3:4 thumbnail grid, with two columns on phones. The fu
 The site is intentionally small: Astro handles the pages and content, while Cloudflare provides the server runtime. The visitor/weather feature is the main server-side feature. Avoid adding a database or additional runtime services unless a real requirement appears.
 
 See `PRODUCTION.md` for the final deployment and verification checklist.
+
+
+## Library
+The homepage includes a small bookshelf below Recently Watched. Book metadata lives in `src/data/library.ts`; cover artwork is loaded from the cited publisher/catalogue image URLs. The full collection is available at `/library`.

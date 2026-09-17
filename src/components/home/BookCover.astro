@@ -1,0 +1,59 @@
+---
+interface Props {
+  book: {
+    title: string;
+    author: string;
+    cover: string;
+    coverFallbacks?: string[];
+  };
+  loading?: "eager" | "lazy";
+  class?: string;
+}
+
+const { book, loading = "lazy", class: className = "" } = Astro.props;
+const fallbacks = book.coverFallbacks ?? [];
+---
+
+<span class={className} data-book-cover data-cover-fallbacks={JSON.stringify(fallbacks)}>
+  <img
+    src={book.cover}
+    alt={`${book.title} by ${book.author} — book cover`}
+    loading={loading}
+    decoding="async"
+  />
+  <span class="book-cover-fallback" aria-hidden="true">
+    <span class="book-cover-fallback-title">{book.title}</span>
+    <span class="book-cover-fallback-author">{book.author}</span>
+  </span>
+</span>
+
+<script>
+  const initBookCovers = () => {
+    document.querySelectorAll<HTMLElement>('[data-book-cover]').forEach((wrapper) => {
+      if (wrapper.dataset.initialized === "true") return;
+      wrapper.dataset.initialized = "true";
+
+      const img = wrapper.querySelector<HTMLImageElement>("img");
+      if (!img) return;
+
+      let fallbacks: string[] = [];
+      try {
+        fallbacks = JSON.parse(wrapper.dataset.coverFallbacks || "[]");
+      } catch {
+        fallbacks = [];
+      }
+
+      let index = 0;
+
+      img.addEventListener("error", () => {
+        if (index < fallbacks.length) {
+          img.src = fallbacks[index++];
+          return;
+        }
+        wrapper.classList.add("cover-unavailable");
+      });
+    });
+  };
+
+  initBookCovers();
+</script>
