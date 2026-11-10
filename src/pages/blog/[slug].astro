@@ -3,7 +3,6 @@ import { getCollection, render } from "astro:content";
 import "../../styles/charts.css";
 import "../../styles/pages/blog.css";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import KeralaUrbanHealthCoverage from "../../components/KeralaUrbanHealthCoverage.astro";
 
 const posts = (await getCollection("blog")).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
